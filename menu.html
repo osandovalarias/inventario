@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Sistema de Gestión de Inventario</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    :root {
+      --color-primary: #3f72af;
+      --color-secondary: #dbe2ef;
+      --color-text: #112d4e;
+      --color-accent: #2c5282;
+      --color-success: #2ecc71;
+      --color-error: #e74c3c;
+      --color-warning: #f39c12;
+      --border-radius: 8px;
+      --box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      --header-bg-color: #2c5282;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: linear-gradient(135deg, #3f72af, #dbe2ef);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: var(--color-text);
+      padding: 20px;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    .header-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 20px;
+      margin-bottom: 40px;
+      background-color: var(--header-bg-color);
+      padding: 20px;
+      border-radius: var(--border-radius);
+      box-shadow: var(--box-shadow);
+      color: white;
+    }
+
+    h1, h2, h3 {
+      text-align: center;
+      color: white;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid var(--color-secondary);
+    }
+
+    .logo-container {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .logo {
+      width: 60px;
+      height: 60px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      background-color: white;
+      padding: 5px;
+    }
+
+    .logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .title-container {
+      flex: 1;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #dbe2ef;
+      margin-top: -10px;
+      font-size: 1.1rem;
+    }
+
+    .menu-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+      margin-bottom: 40px;
+    }
+
+    .menu-card {
+      background-color: white;
+      border-radius: var(--border-radius);
+      box-shadow: var(--box-shadow);
+      padding: 25px;
+      text-align: center;
+      transition: transform 0.3s, box-shadow 0.3s;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 200px;
+    }
+
+    .menu-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .menu-icon {
+      font-size: 3rem;
+      margin-bottom: 15px;
+      color: var(--color-primary);
+    }
+
+    .menu-title {
+      font-size: 1.5rem;
+      margin-bottom: 10px;
+      color: var(--color-text);
+    }
+
+    .menu-description {
+      color: #666;
+      margin-bottom: 15px;
+    }
+
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: var(--border-radius);
+      color: white;
+      cursor: pointer;
+      font-size: 1rem;
+      font-weight: 600;
+      transition: all 0.3s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin: 5px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      text-decoration: none;
+    }
+
+    .btn-primary {
+      background: var(--color-primary);
+    }
+
+    .btn-primary:hover {
+      background: var(--color-accent);
+      transform: translateY(-2px);
+    }
+
+    .btn-danger {
+      background: var(--color-error);
+    }
+
+    .btn-danger:hover {
+      background: #c0392b;
+      transform: translateY(-2px);
+    }
+
+    .logout-container {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: auto;
+      padding: 20px;
+      color: var(--color-text);
+    }
+
+    @media (max-width: 768px) {
+      .menu-container {
+        grid-template-columns: 1fr;
+      }
+      
+      .header-container {
+        flex-direction: column;
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header-container">
+      <div class="logo-container">
+        <div class="logo">
+          <img src="img/logo.png" alt="Logo">
+        </div>
+        <div>
+          <h1>Sistema de Gestión de Inventario</h1>
+          <div class="subtitle">Control integral de productos y movimientos</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="logout-container">
+      <a href="index.html" class="btn btn-danger">
+        <i class="fas fa-sign-out-alt"></i> Salir del Sistema
+      </a>
+    </div>
+
+    <div class="menu-container">
+      <div class="menu-card" onclick="window.location.href='gestion_de_productos.html'">
+        <div class="menu-icon">
+          <i class="fas fa-boxes"></i>
+        </div>
+        <h3 class="menu-title">Gestión de Productos</h3>
+        <p class="menu-description">Administra el catálogo de productos, precios y existencias</p>
+        <a href="gestion_de_productos.html" class="btn btn-primary">
+          <i class="fas fa-arrow-right"></i> Acceder
+        </a>
+      </div>
+
+      <div class="menu-card" onclick="window.location.href='ingreso_inventario.html'">
+        <div class="menu-icon">
+          <i class="fas fa-clipboard-list"></i>
+        </div>
+        <h3 class="menu-title">Control de Inventario</h3>
+        <p class="menu-description">Registra movimientos de entrada y salida de productos</p>
+        <a href="ingreso_inventario.html" class="btn btn-primary">
+          <i class="fas fa-arrow-right"></i> Acceder
+        </a>
+      </div>
+    </div>
+
+    <div class="footer">
+      <p>Sistema desarrollado por Softrinet © 2025 - Todos los derechos reservados</p>
+    </div>
+  </div>
+</body>
+</html>
