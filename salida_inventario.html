@@ -2,6 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
+  <title>Control de Inventario</title>
   <title>Salida de Productos del Inventario</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -604,6 +605,7 @@
         </div>
         <div>
           <h1>Control de Inventario</h1>
+          <div class="subtitle">Registro de movimientos con múltiples productos</div>
           <div class="subtitle">Registro de Salidas de Productos</div>
         </div>
       </div>
@@ -620,40 +622,36 @@
     <div id="error-message" class="status-message error" style="display: none;"></div>
     <div id="success-message" class="status-message success" style="display: none;"></div>
 
-    <!-- Formulario de ingreso -->
     <div class="form-container">
       <h3>Ingreso de Movimiento de Inventario</h3>
       <form id="form-inventario">
         <div class="form-grid">
           <div class="input-group">
             <label for="patente">Patente:</label>
-            <input type="text" id="patente" list="patentes-list" placeholder="Escriba o seleccione una patente" required>
-            <datalist id="patentes-list">
-              <!-- Las opciones se cargarán dinámicamente -->
-            </datalist>
+            <input list="patentes" id="patente" placeholder="Seleccione o escriba una patente" required>
+            <datalist id="patentes">
+              </datalist>
           </div>
-          
+
           <div class="input-group">
             <label for="mecanico">Mecánico A:</label>
-            <select id="mecanico" required>
-              <option value="">Seleccione un mecánico...</option>
-              <!-- Las opciones se cargarán dinámicamente -->
-            </select>
+            <input list="mecanicos-list" id="mecanico" placeholder="Seleccione o escriba un mecánico" required>
+            <datalist id="mecanicos-list">
+              </datalist>
           </div>
-          
+
           <div class="input-group">
-            <label for="mecanico2">Mecánico B (opcional):</label>
-            <select id="mecanico2">
-              <option value="">Seleccione un mecánico...</option>
-              <!-- Las opciones se cargarán dinámicamente -->
-            </select>
+            <label for="mecanico2">Mecánico B:</label>
+            <input list="mecanicos-list2" id="mecanico2" placeholder="Seleccione o escriba un mecánico (Opcional)">
+            <datalist id="mecanicos-list2">
+              </datalist>
           </div>
-          
+
           <div class="input-group">
             <label for="fecha">Fecha:</label>
             <input type="date" id="fecha" required>
           </div>
-          
+
           <div class="input-group">
             <label for="concepto">Concepto:</label>
             <input list="conceptos" id="concepto" placeholder="Seleccione o escriba un concepto" required>
@@ -664,15 +662,15 @@
             </datalist>
           </div>
         </div>
-        
+
         <h3 style="margin-top: 20px;">Productos</h3>
-        
+
         <div class="productos-actions">
           <button type="button" class="btn btn-primary" onclick="agregarProducto()">
             <i class="fas fa-plus"></i> Agregar Producto
           </button>
         </div>
-        
+
         <table class="productos-table" id="tabla-productos">
           <thead>
             <tr>
@@ -686,14 +684,13 @@
             </tr>
           </thead>
           <tbody>
-            <!-- Las filas de productos se agregarán aquí -->
-          </tbody>
+            </tbody>
         </table>
-        
+
         <div class="total-container">
           <span id="total-movimiento">Total del Movimiento: $0</span>
         </div>
-        
+
         <div class="form-actions">
           <button type="reset" class="btn btn-secondary" onclick="limpiarFormulario()">
             <i class="fas fa-times"></i> Limpiar
@@ -705,7 +702,6 @@
       </form>
     </div>
 
-    <!-- Resultados de búsqueda -->
     <div class="resultados-container" id="resultados-container" style="display: none;">
       <h3>Historial de Movimientos</h3>
       <div class="input-group">
@@ -717,7 +713,7 @@
           </button>
         </div>
       </div>
-      
+
       <table class="tabla-resultados" id="tabla-resultados">
         <thead>
           <tr>
@@ -734,12 +730,10 @@
           </tr>
         </thead>
         <tbody>
-          <!-- Los resultados se cargarán aquí -->
-        </tbody>
+          </tbody>
       </table>
     </div>
 
-    <!-- Modal para impresión -->
     <div id="print-modal" class="print-modal">
       <div class="print-content">
         <div class="print-header">
@@ -751,11 +745,10 @@
             <p>Registro de movimientos con múltiples productos</p>
           </div>
         </div>
-        
+
         <div id="print-details">
-          <!-- Los detalles de impresión se cargarán aquí -->
-        </div>
-        
+          </div>
+
         <div class="print-actions">
           <button class="btn btn-secondary" onclick="cerrarModalImpresion()">
             <i class="fas fa-times"></i> Cerrar
@@ -767,7 +760,6 @@
       </div>
     </div>
 
-    <!-- Modal para edición -->
     <div id="edit-modal" class="edit-modal">
       <div class="edit-content">
         <div class="edit-header">
@@ -776,48 +768,45 @@
             <i class="fas fa-times"></i>
           </button>
         </div>
-        
+
         <form id="form-edicion">
           <input type="hidden" id="edit-id">
-          
+
           <div class="form-grid">
             <div class="input-group">
               <label for="edit-patente">Patente:</label>
-              <input type="text" id="edit-patente" list="edit-patentes-list" placeholder="Escriba o seleccione una patente" required>
-              <datalist id="edit-patentes-list">
-                <!-- Las opciones se cargarán dinámicamente -->
-              </datalist>
+              <input list="edit-patentes" id="edit-patente" placeholder="Seleccione o escriba una patente" required>
+              <datalist id="edit-patentes">
+                </datalist>
             </div>
-            
+
             <div class="input-group">
               <label for="edit-mecanico">Mecánico A:</label>
-              <select id="edit-mecanico" required>
-                <option value="">Seleccione un mecánico...</option>
-                <!-- Las opciones se cargarán dinámicamente -->
-              </select>
+              <input list="edit-mecanicos-list" id="edit-mecanico" placeholder="Seleccione o escriba un mecánico" required>
+              <datalist id="edit-mecanicos-list">
+                </datalist>
             </div>
             
             <div class="input-group">
-              <label for="edit-mecanico2">Mecánico B (opcional):</label>
-              <select id="edit-mecanico2">
-                <option value="">Seleccione un mecánico...</option>
-                <!-- Las opciones se cargarán dinámicamente -->
-              </select>
+              <label for="edit-mecanico2">Mecánico B:</label>
+              <input list="edit-mecanicos-list2" id="edit-mecanico2" placeholder="Seleccione o escriba un mecánico (Opcional)">
+              <datalist id="edit-mecanicos-list2">
+                </datalist>
             </div>
-            
+
             <div class="input-group">
               <label for="edit-fecha">Fecha:</label>
               <input type="date" id="edit-fecha" required>
             </div>
-            
+
             <div class="input-group">
               <label for="edit-concepto">Concepto:</label>
               <input list="conceptos" id="edit-concepto" placeholder="Seleccione o escriba un concepto" required>
             </div>
           </div>
-          
+
           <h3 style="margin-top: 20px;">Productos</h3>
-          
+
           <table class="productos-table" id="edit-tabla-productos">
             <thead>
               <tr>
@@ -830,10 +819,9 @@
               </tr>
             </thead>
             <tbody>
-              <!-- Las filas de productos se agregarán aquí -->
-            </tbody>
+              </tbody>
           </table>
-          
+
           <div class="edit-actions">
             <button type="button" class="btn btn-secondary" onclick="cerrarModalEdicion()">
               <i class="fas fa-times"></i> Cancelar
@@ -860,7 +848,7 @@
       let existenciasOriginales = {}; // Almacena las existencias originales antes de cualquier modificación
       let currentUserId = null; // Variable para almacenar el ID del usuario actual
       let movimientoEditando = null; // Almacena el movimiento que se está editando
-      
+
       // Función para obtener la fecha actual en Chile Continental
       function getCurrentDateInChile() {
         const chileTime = new Date().toLocaleString('en-US', { timeZone: 'America/Santiago' });
@@ -874,7 +862,7 @@
         // Ajustar a la zona horaria de Chile
         const offset = date.getTimezoneOffset() + (date.getTimezoneOffset() < 0 ? -240 : 240);
         const chileTime = new Date(date.getTime() + offset * 60 * 1000);
-        
+
         return chileTime.toLocaleDateString('es-CL', {
           timeZone: 'America/Santiago',
           day: '2-digit',
@@ -882,19 +870,19 @@
           year: 'numeric'
         });
       }
-      
+
       // Función para inicializar Supabase
       async function inicializarSupabase() {
         const connectionStatus = document.getElementById('connection-status');
         connectionStatus.style.display = 'block';
-        
+
         try {
           // Configuración de Supabase - Reemplaza con tus credenciales
           const supabaseUrl = 'https://cswjdvjlfztewtmkrxsh.supabase.co';
           const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNzd2pkdmpsZnp0ZXd0bWtyeHNoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE2NDg0ODEsImV4cCI6MjA2NzIyNDQ4MX0.z0C2PtfkvYwIYfFjnFmdRicn_Jfqyq_SbCHKycHBX-4';
-          
+
           supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
-          
+
           // Obtener el usuario actual (si hay autenticación)
           try {
             const { data: { user } } = await supabaseClient.auth.getUser();
@@ -903,23 +891,23 @@
             console.log('No hay usuario autenticado, usando usuario anónimo');
             currentUserId = 'anonimo';
           }
-          
+
           // Verificar conexión obteniendo datos necesarios
           const [productosCatalogo, mecanicos, maquinas] = await Promise.all([
             obtenerProductosCatalogo(),
             obtenerMecanicos(),
             obtenerMaquinas()
           ]);
-          
+
           connectionStatus.className = 'connection-status connection-success';
           connectionStatus.innerHTML = '<i class="fas fa-check-circle"></i> Conectado a la base de datos';
-          
+
           setTimeout(() => {
             connectionStatus.style.display = 'none';
           }, 3000);
-          
+
           mostrarExito('Conexión con la base de datos establecida correctamente');
-          
+
           // Actualizar la lista de productos base con los de la base de datos
           if (productosCatalogo && productosCatalogo.length > 0) {
             productosBase = productosCatalogo.map(p => ({
@@ -936,126 +924,117 @@
               existenciasOriginales[p.codigo] = p.existencias;
             });
           }
-          
-          // Actualizar lista de mecánicos
+
+          // Actualizar lista de mecánicos (con datalist)
           if (mecanicos && mecanicos.length > 0) {
             mecanicosBase = mecanicos;
-            
-            // Cargar mecánicos en el select principal
-            const selectMecanico = document.getElementById('mecanico');
-            selectMecanico.innerHTML = '<option value="">Seleccione un mecánico...</option>';
+            const datalistMecanicoA = document.getElementById('mecanicos-list');
+            const datalistMecanicoB = document.getElementById('mecanicos-list2');
+            datalistMecanicoA.innerHTML = '';
+            datalistMecanicoB.innerHTML = '';
             mecanicos.forEach(mecanico => {
-              const option = document.createElement('option');
-              option.value = mecanico.id;
-              option.textContent = mecanico.nombre;
-              selectMecanico.appendChild(option);
+              const optionA = document.createElement('option');
+              optionA.value = mecanico.nombre;
+              optionA.dataset.id = mecanico.id;
+              datalistMecanicoA.appendChild(optionA);
+
+              const optionB = document.createElement('option');
+              optionB.value = mecanico.nombre;
+              optionB.dataset.id = mecanico.id;
+              datalistMecanicoB.appendChild(optionB);
             });
-            
-            // Cargar mecánicos en el select secundario
-            const selectMecanico2 = document.getElementById('mecanico2');
-            selectMecanico2.innerHTML = '<option value="">Seleccione un mecánico...</option>';
+
+            // También para el datalist de edición
+            const editDatalistMecanicoA = document.getElementById('edit-mecanicos-list');
+            const editDatalistMecanicoB = document.getElementById('edit-mecanicos-list2');
+            editDatalistMecanicoA.innerHTML = '';
+            editDatalistMecanicoB.innerHTML = '';
             mecanicos.forEach(mecanico => {
-              const option = document.createElement('option');
-              option.value = mecanico.id;
-              option.textContent = mecanico.nombre;
-              selectMecanico2.appendChild(option);
-            });
-            
-            // También para los selects de edición
-            const editSelectMecanico = document.getElementById('edit-mecanico');
-            editSelectMecanico.innerHTML = '<option value="">Seleccione un mecánico...</option>';
-            mecanicos.forEach(mecanico => {
-              const option = document.createElement('option');
-              option.value = mecanico.id;
-              option.textContent = mecanico.nombre;
-              editSelectMecanico.appendChild(option);
-            });
-            
-            const editSelectMecanico2 = document.getElementById('edit-mecanico2');
-            editSelectMecanico2.innerHTML = '<option value="">Seleccione un mecánico...</option>';
-            mecanicos.forEach(mecanico => {
-              const option = document.createElement('option');
-              option.value = mecanico.id;
-              option.textContent = mecanico.nombre;
-              editSelectMecanico2.appendChild(option);
+              const optionA = document.createElement('option');
+              optionA.value = mecanico.nombre;
+              optionA.dataset.id = mecanico.id;
+              editDatalistMecanicoA.appendChild(optionA);
+
+              const optionB = document.createElement('option');
+              optionB.value = mecanico.nombre;
+              optionB.dataset.id = mecanico.id;
+              editDatalistMecanicoB.appendChild(optionB);
             });
           }
-          
-          // Actualizar lista de patentes
+
+          // Actualizar lista de patentes (con datalist)
           if (maquinas && maquinas.length > 0) {
             maquinasBase = maquinas;
-            
-            // Cargar patentes en el datalist
-            const patentesList = document.getElementById('patentes-list');
-            patentesList.innerHTML = '';
+            const datalistPatente = document.getElementById('patentes');
+            datalistPatente.innerHTML = '';
             maquinas.forEach(maquina => {
               const option = document.createElement('option');
               option.value = maquina.patente;
-              patentesList.appendChild(option);
+              datalistPatente.appendChild(option);
             });
-            
+
             // También para el datalist de edición
-            const editPatentesList = document.getElementById('edit-patentes-list');
-            editPatentesList.innerHTML = '';
+            const editDatalistPatente = document.getElementById('edit-patentes');
+            editDatalistPatente.innerHTML = '';
             maquinas.forEach(maquina => {
               const option = document.createElement('option');
               option.value = maquina.patente;
-              editPatentesList.appendChild(option);
+              editDatalistPatente.appendChild(option);
             });
           }
-          
+
           return true;
         } catch (error) {
           console.error('Error al conectar con Supabase:', error);
-          
+
           connectionStatus.className = 'connection-status connection-error';
           connectionStatus.innerHTML = `<i class="fas fa-exclamation-circle"></i> Error: ${error.message}`;
-          
+
           mostrarError(`Error al conectar con la base de datos: ${error.message}`);
           return false;
         }
       }
-      
+
       // Función para obtener productos del catálogo
       async function obtenerProductosCatalogo() {
         const { data, error } = await supabaseClient
           .from('productos')
           .select('id, codigo, nombre_producto, precio, existencias, stock_minimo')
           .order('id', { ascending: true });
-        
+
         if (error) throw error;
         return data;
       }
-      
+
       // Función para obtener mecánicos
       async function obtenerMecanicos() {
         const { data, error } = await supabaseClient
           .from('mecanicos')
           .select('id, nombre')
           .order('nombre', { ascending: true });
-        
+
         if (error) throw error;
         return data;
       }
-      
+
       // Función para obtener máquinas
       async function obtenerMaquinas() {
         const { data, error } = await supabaseClient
           .from('maquinas')
           .select('patente')
           .order('patente', { ascending: true });
-        
+
         if (error) throw error;
         return data;
       }
-      
+
       // Agregar un nuevo producto a la tabla
       function agregarProducto(producto = null) {
         const id = 'producto-' + contadorProductos++;
         const tbody = document.getElementById('tabla-productos').getElementsByTagName('tbody')[0];
         const row = tbody.insertRow();
         row.id = id;
-        
+
         // Código (con autocompletado desde la base de datos)
         const codigoCell = row.insertCell(0);
         const codigoInput = document.createElement('input');
@@ -1064,7 +1043,7 @@
         codigoInput.placeholder = 'Código del producto';
         codigoInput.required = true;
         if (producto) codigoInput.value = producto.codigo;
-        
+
         // Crear datalist para autocompletado de códigos
         const codigoDatalist = document.createElement('datalist');
         codigoDatalist.id = `datalist-codigo-${id}`;
@@ -1076,1057 +1055,1137 @@
           option.dataset.existencias = prod.existencias;
           codigoDatalist.appendChild(option);
         });
-        
+
         codigoInput.setAttribute('list', codigoDatalist.id);
         codigoInput.addEventListener('change', function() {
           const selectedOption = document.querySelector(`#${codigoDatalist.id} option[value="${this.value}"]`);
           if (selectedOption) {
-            const nombre = selectedOption.dataset.nombre;
-            const precio = selectedOption.dataset.precio;
-            const existencias = selectedOption.dataset.existencias;
-            
-            // Actualizar los otros campos
-            row.cells[1].querySelector('input').value = nombre;
-            row.cells[2].querySelector('input').value = precio;
-            row.cells[5].textContent = existencias;
-            
-            // Verificar si hay suficientes existencias
-            verificarExistencias(row);
+            row.cells[1].getElementsByTagName('input')[0].value = selectedOption.dataset.nombre;
+            row.cells[2].getElementsByTagName('input')[0].value = selectedOption.dataset.precio;
+
+            // Calcular existencias disponibles considerando otros productos en la tabla
+            const existenciasOriginal = existenciasOriginales[this.value] || 0;
+            const unidadesEnTabla = calcularUnidadesTotalesParaProducto(this.value);
+            const existenciasDisponibles = existenciasOriginal - unidadesEnTabla;
+
+            const existenciasContainer = row.cells[5];
+            existenciasContainer.innerHTML = ''; // Limpiar contenedor
+
+            const existenciasInput = document.createElement('input');
+            existenciasInput.type = 'number';
+            existenciasInput.className = 'form-control';
+            existenciasInput.min = '0';
+            existenciasInput.step = '1';
+            existenciasInput.value = existenciasDisponibles;
+            existenciasInput.readOnly = true;
+            existenciasContainer.appendChild(existenciasInput);
+
+            // Solo mostrar "Original" si hay existencias
+            if (existenciasOriginal > 0) {
+              const infoText = document.createElement('div');
+              infoText.className = 'existencias-disponibles';
+              infoText.textContent = `(Original: ${existenciasOriginal})`;
+              existenciasContainer.appendChild(infoText);
+            }
+
+            // Validar existencias
+            validarExistencias(row);
+            calcularTotales();
           }
         });
-        
         codigoCell.appendChild(codigoInput);
         codigoCell.appendChild(codigoDatalist);
-        
-        // Nombre del producto
+
+        // Nombre del producto con autocompletado
         const nombreCell = row.insertCell(1);
+        const nombreContainer = document.createElement('div');
+        nombreContainer.className = 'autocomplete-container';
+
         const nombreInput = document.createElement('input');
         nombreInput.type = 'text';
-        nombreInput.className = 'form-control';
+        nombreInput.className = 'form-control nombre-producto';
         nombreInput.placeholder = 'Nombre del producto';
         nombreInput.required = true;
         if (producto) nombreInput.value = producto.nombre;
-        nombreCell.appendChild(nombreInput);
-        
-        // Precio unitario
+
+        const autocompleteList = document.createElement('div');
+        autocompleteList.className = 'autocomplete-list';
+        autocompleteList.style.display = 'none';
+
+        nombreInput.addEventListener('input', function() {
+          const searchTerm = this.value.toLowerCase();
+          autocompleteList.innerHTML = '';
+
+          if (searchTerm.length > 1) {
+            const filtered = productosBase.filter(prod => 
+              prod.nombre.toLowerCase().includes(searchTerm)
+            );
+
+            if (filtered.length > 0) {
+              filtered.forEach(prod => {
+                const item = document.createElement('div');
+                item.className = 'autocomplete-item';
+                item.textContent = `${prod.nombre} (${prod.codigo})`;
+                item.dataset.codigo = prod.codigo;
+                item.dataset.nombre = prod.nombre;
+                item.dataset.precio = prod.precio;
+                item.dataset.existencias = prod.existencias;
+
+                item.addEventListener('click', function() {
+                  nombreInput.value = this.dataset.nombre;
+                  row.cells[0].getElementsByTagName('input')[0].value = this.dataset.codigo;
+                  row.cells[2].getElementsByTagName('input')[0].value = this.dataset.precio;
+
+                  // Calcular existencias disponibles considerando otros productos en la tabla
+                  const existenciasOriginal = existenciasOriginales[this.dataset.codigo] || 0;
+                  const unidadesEnTabla = calcularUnidadesTotalesParaProducto(this.dataset.codigo);
+                  const existenciasDisponibles = existenciasOriginal - unidadesEnTabla;
+
+                  const existenciasContainer = row.cells[5];
+                  existenciasContainer.innerHTML = ''; // Limpiar contenedor
+
+                  const existenciasInput = document.createElement('input');
+                  existenciasInput.type = 'number';
+                  existenciasInput.className = 'form-control';
+                  existenciasInput.min = '0';
+                  existenciasInput.step = '1';
+                  existenciasInput.value = existenciasDisponibles;
+                  existenciasInput.readOnly = true;
+                  existenciasContainer.appendChild(existenciasInput);
+
+                  // Solo mostrar "Original" si hay existencias
+                  if (existenciasOriginal > 0) {
+                    const infoText = document.createElement('div');
+                    infoText.className = 'existencias-disponibles';
+                    infoText.textContent = `(Original: ${existenciasOriginal})`;
+                    existenciasContainer.appendChild(infoText);
+                  }
+
+                  // Validar existencias
+                  validarExistencias(row);
+                  autocompleteList.style.display = 'none';
+                  calcularTotales();
+                });
+
+                autocompleteList.appendChild(item);
+              });
+
+              autocompleteList.style.display = 'block';
+            } else {
+              autocompleteList.style.display = 'none';
+            }
+          } else {
+            autocompleteList.style.display = 'none';
+          }
+        });
+
+        nombreInput.addEventListener('focus', function() {
+          if (autocompleteList.children.length > 0) {
+            autocompleteList.style.display = 'block';
+          }
+        });
+
+        document.addEventListener('click', function(e) {
+          if (!nombreContainer.contains(e.target)) {
+            autocompleteList.style.display = 'none';
+          }
+        });
+
+        nombreContainer.appendChild(nombreInput);
+        nombreContainer.appendChild(autocompleteList);
+        nombreCell.appendChild(nombreContainer);
+
+        // Precio Unitario
         const precioCell = row.insertCell(2);
         const precioInput = document.createElement('input');
         precioInput.type = 'number';
         precioInput.className = 'form-control';
         precioInput.min = '0';
         precioInput.step = '0.01';
-        precioInput.placeholder = '0.00';
+        precioInput.placeholder = '0';
         precioInput.required = true;
         if (producto) precioInput.value = producto.precio;
-        precioInput.addEventListener('input', () => calcularTotalProducto(row));
+        precioInput.addEventListener('input', calcularTotales);
         precioCell.appendChild(precioInput);
-        
-        // Unidades
+
+        // Unidades - MODIFICADO: Ahora comienza en 0
         const unidadesCell = row.insertCell(3);
         const unidadesInput = document.createElement('input');
         unidadesInput.type = 'number';
         unidadesInput.className = 'form-control';
-        unidadesInput.min = '1';
+        unidadesInput.min = '0';
         unidadesInput.step = '1';
-        unidadesInput.value = producto ? producto.unidades : '1';
+        unidadesInput.value = '0'; // Cambiado de 1 a 0
+        unidadesInput.placeholder = '0'; // Cambiado de 1 a 0
         unidadesInput.required = true;
-        unidadesInput.addEventListener('input', () => {
-          calcularTotalProducto(row);
-          verificarExistencias(row);
+        if (producto) unidadesInput.value = producto.unidades;
+        unidadesInput.addEventListener('input', function() {
+          // Actualizar existencias disponibles cuando cambian las unidades
+          const codigo = row.cells[0].getElementsByTagName('input')[0].value;
+          if (codigo) {
+            const existenciasOriginal = existenciasOriginales[codigo] || 0;
+            const unidadesEnTabla = calcularUnidadesTotalesParaProducto(codigo);
+            const existenciasDisponibles = existenciasOriginal - unidadesEnTabla;
+
+            const existenciasContainer = row.cells[5];
+            const existenciasInput = existenciasContainer.getElementsByTagName('input')[0];
+            if (existenciasInput) {
+              existenciasInput.value = existenciasDisponibles;
+            }
+
+            // Validar existencias
+            validarExistencias(row);
+          }
+          calcularTotales();
         });
         unidadesCell.appendChild(unidadesInput);
-        
-        // Total
+
+        // Total (calculado automáticamente)
         const totalCell = row.insertCell(4);
-        totalCell.className = 'total-producto';
-        totalCell.textContent = producto ? '$' + (producto.precio * producto.unidades).toFixed(2) : '$0.00';
-        
-        // Existencias disponibles
+        const totalInput = document.createElement('input');
+        totalInput.type = 'number';
+        totalInput.className = 'form-control total-producto';
+        totalInput.readOnly = true;
+        if (producto) totalInput.value = producto.total;
+        totalCell.appendChild(totalInput);
+
+        // Existencias Disponibles
         const existenciasCell = row.insertCell(5);
-        existenciasCell.className = 'existencias-disponibles';
-        existenciasCell.textContent = producto ? producto.existencias : '0';
-        
+        if (producto) {
+          const existenciasInput = document.createElement('input');
+          existenciasInput.type = 'number';
+          existenciasInput.className = 'form-control';
+          existenciasInput.min = '0';
+          existenciasInput.step = '1';
+          existenciasInput.value = producto.existencias;
+          existenciasInput.readOnly = true;
+          existenciasCell.appendChild(existenciasInput);
+
+          // Solo mostrar "Original" si hay existencias
+          if (existenciasOriginales[producto.codigo] > 0) {
+            const infoText = document.createElement('div');
+            infoText.className = 'existencias-disponibles';
+            infoText.textContent = `(Original: ${existenciasOriginales[producto.codigo] || 0})`;
+            existenciasCell.appendChild(infoText);
+          }
+        }
+
         // Acciones
         const accionesCell = row.insertCell(6);
-        const btnEliminar = document.createElement('button');
-        btnEliminar.type = 'button';
-        btnEliminar.className = 'btn btn-danger btn-sm';
-        btnEliminar.innerHTML = '<i class="fas fa-trash"></i>';
-        btnEliminar.onclick = () => eliminarProducto(id);
-        accionesCell.appendChild(btnEliminar);
-        
-        // Si es un producto existente, verificar existencias
+        const eliminarBtn = document.createElement('button');
+        eliminarBtn.className = 'btn btn-danger btn-sm';
+        eliminarBtn.innerHTML = '<i class="fas fa-trash"></i>';
+        eliminarBtn.onclick = function() { eliminarProducto(id); };
+        accionesCell.appendChild(eliminarBtn);
+
+        // Calcular total inicial si es un producto existente
         if (producto) {
-          verificarExistencias(row);
+          calcularTotalProducto(row);
         }
-        
-        // Calcular total general
-        calcularTotalGeneral();
+
+        // Actualizar total general
+        calcularTotales();
       }
-      
-      // Eliminar un producto de la tabla
-      function eliminarProducto(id) {
-        const row = document.getElementById(id);
-        if (row) {
-          row.remove();
-          calcularTotalGeneral();
-        }
-      }
-      
-      // Calcular el total de un producto
-      function calcularTotalProducto(row) {
-        const precio = parseFloat(row.cells[2].querySelector('input').value) || 0;
-        const unidades = parseInt(row.cells[3].querySelector('input').value) || 0;
-        const total = precio * unidades;
-        row.cells[4].textContent = '$' + total.toFixed(2);
-        calcularTotalGeneral();
-      }
-      
-      // Calcular el total general del movimiento
-      function calcularTotalGeneral() {
-        const totales = document.querySelectorAll('.total-producto');
-        let totalGeneral = 0;
-        
-        totales.forEach(cell => {
-          const valor = parseFloat(cell.textContent.replace('$', '')) || 0;
-          totalGeneral += valor;
-        });
-        
-        document.getElementById('total-movimiento').textContent = `Total del Movimiento: $${totalGeneral.toFixed(2)}`;
-      }
-      
-      // Verificar si hay suficientes existencias para un producto
-      function verificarExistencias(row) {
-        const codigoInput = row.cells[0].querySelector('input');
-        const unidadesInput = row.cells[3].querySelector('input');
-        const existenciasCell = row.cells[5];
-        
-        if (!codigoInput.value || !unidadesInput.value) return;
-        
-        const codigo = codigoInput.value;
-        const unidades = parseInt(unidadesInput.value) || 0;
-        const existencias = parseInt(existenciasCell.textContent) || 0;
-        
-        if (unidades > existencias) {
-          unidadesInput.classList.add('required-field');
-          unidadesInput.title = 'No hay suficientes existencias';
-        } else {
-          unidadesInput.classList.remove('required-field');
-          unidadesInput.title = '';
-        }
-      }
-      
-      // Limpiar el formulario
-      function limpiarFormulario() {
-        document.getElementById('form-inventario').reset();
-        const tbody = document.getElementById('tabla-productos').getElementsByTagName('tbody')[0];
-        tbody.innerHTML = '';
-        document.getElementById('total-movimiento').textContent = 'Total del Movimiento: $0';
-        document.getElementById('fecha').value = getCurrentDateInChile();
-        contadorProductos = 0;
-      }
-      
-      // Mostrar mensaje de error
-      function mostrarError(mensaje) {
-        const errorDiv = document.getElementById('error-message');
-        errorDiv.textContent = mensaje;
-        errorDiv.style.display = 'block';
-        
-        setTimeout(() => {
-          errorDiv.style.display = 'none';
-        }, 5000);
-      }
-      
-      // Mostrar mensaje de éxito
-      function mostrarExito(mensaje) {
-        const successDiv = document.getElementById('success-message');
-        successDiv.textContent = mensaje;
-        successDiv.style.display = 'block';
-        
-        setTimeout(() => {
-          successDiv.style.display = 'none';
-        }, 5000);
-      }
-      
-      // Guardar el movimiento en la base de datos
-      async function guardarMovimiento(event) {
-        event.preventDefault();
-        
-        // Validar formulario
-        const patente = document.getElementById('patente').value.trim();
-        const mecanico = document.getElementById('mecanico').value;
-        const mecanico2 = document.getElementById('mecanico2').value;
-        const fecha = document.getElementById('fecha').value;
-        const concepto = document.getElementById('concepto').value.trim();
-        
-        if (!patente || !mecanico || !fecha || !concepto) {
-          mostrarError('Por favor, complete todos los campos obligatorios.');
-          return;
-        }
-        
-        // Obtener productos de la tabla
-        const productos = [];
-        const tbody = document.getElementById('tabla-productos').getElementsByTagName('tbody')[0];
-        const rows = tbody.getElementsByTagName('tr');
-        
-        if (rows.length === 0) {
-          mostrarError('Debe agregar al menos un producto al movimiento.');
-          return;
-        }
-        
-        let hayErrores = false;
-        
-        for (let i = 0; i < rows.length; i++) {
-          const row = rows[i];
-          const codigo = row.cells[0].querySelector('input').value.trim();
-          const nombre = row.cells[1].querySelector('input').value.trim();
-          const precio = parseFloat(row.cells[2].querySelector('input').value) || 0;
-          const unidades = parseInt(row.cells[3].querySelector('input').value) || 0;
-          const existencias = parseInt(row.cells[5].textContent) || 0;
-          
-          if (!codigo || !nombre || precio <= 0 || unidades <= 0) {
-            mostrarError('Todos los campos de producto son obligatorios y deben tener valores válidos.');
-            hayErrores = true;
-            break;
-          }
-          
-          if (unidades > existencias) {
-            mostrarError(`No hay suficientes existencias para el producto ${nombre}. Existencias disponibles: ${existencias}`);
-            hayErrores = true;
-            break;
-          }
-          
-          productos.push({
-            codigo,
-            nombre,
-            precio,
-            unidades,
-            total: precio * unidades
-          });
-        }
-        
-        if (hayErrores) return;
-        
-        try {
-          // Guardar el movimiento en la base de datos
-          const { data: movimiento, error: movimientoError } = await supabaseClient
-            .from('movimientos_inventario')
-            .insert([
-              {
-                patente,
-                mecanico,
-                mecanico2: mecanico2 || null,
-                fecha,
-                concepto,
-                total: productos.reduce((sum, p) => sum + p.total, 0),
-                usuario: currentUserId
-              }
-            ])
-            .select();
-          
-          if (movimientoError) throw movimientoError;
-          
-          const movimientoId = movimiento[0].id;
-          
-          // Guardar los productos del movimiento
-          for (const producto of productos) {
-            const { error: detalleError } = await supabaseClient
-              .from('detalle_movimientos')
-              .insert([
-                {
-                  movimiento_id: movimientoId,
-                  codigo_producto: producto.codigo,
-                  nombre_producto: producto.nombre,
-                  precio_unitario: producto.precio,
-                  unidades: producto.unidades,
-                  total: producto.total
-                }
-              ]);
-            
-            if (detalleError) throw detalleError;
-            
-            // Actualizar existencias del producto
-            const productoBase = productosBase.find(p => p.codigo === producto.codigo);
-            if (productoBase) {
-              const nuevasExistencias = productoBase.existencias - producto.unidades;
-              
-              const { error: updateError } = await supabaseClient
-                .from('productos')
-                .update({ existencias: nuevasExistencias })
-                .eq('codigo', producto.codigo);
-              
-              if (updateError) throw updateError;
-              
-              // Actualizar el valor en productosBase
-              productoBase.existencias = nuevasExistencias;
-            }
-          }
-          
-          mostrarExito('Movimiento guardado correctamente.');
-          limpiarFormulario();
-          
-          // Mostrar el historial
-          document.getElementById('resultados-container').style.display = 'block';
-          buscarMovimientos();
-          
-        } catch (error) {
-          console.error('Error al guardar el movimiento:', error);
-          mostrarError(`Error al guardar el movimiento: ${error.message}`);
-        }
-      }
-      
-      // Buscar movimientos en el historial
-      async function buscarMovimientos() {
-        const busqueda = document.getElementById('buscar-producto').value.trim();
-        
-        try {
-          let query = supabaseClient
-            .from('movimientos_inventario')
-            .select(`
-              id,
-              patente,
-              mecanico,
-              mecanico2,
-              fecha,
-              concepto,
-              total,
-              usuario,
-              detalle_movimientos (
-                codigo_producto,
-                nombre_producto,
-                unidades,
-                precio_unitario,
-                total
-              ),
-              mecanicos:mecanico (nombre),
-              mecanicos2:mecanico2 (nombre)
-            `)
-            .order('fecha', { ascending: false });
-          
-          if (busqueda) {
-            query = query.or(`patente.ilike.%${busqueda}%,concepto.ilike.%${busqueda}%,detalle_movimientos.codigo_producto.ilike.%${busqueda}%,detalle_movimientos.nombre_producto.ilike.%${busqueda}%`);
-          }
-          
-          const { data: movimientos, error } = await query;
-          
-          if (error) throw error;
-          
-          const tbody = document.getElementById('tabla-resultados').getElementsByTagName('tbody')[0];
-          tbody.innerHTML = '';
-          
-          if (!movimientos || movimientos.length === 0) {
-            const row = tbody.insertRow();
-            const cell = row.insertCell(0);
-            cell.colSpan = 10;
-            cell.textContent = 'No se encontraron movimientos.';
-            cell.style.textAlign = 'center';
-            return;
-          }
-          
-          // Mostrar los movimientos encontrados
-          movimientos.forEach(movimiento => {
-            const detalles = movimiento.detalle_movimientos;
-            
-            if (detalles && detalles.length > 0) {
-              detalles.forEach((detalle, index) => {
-                const row = tbody.insertRow();
-                
-                // Fecha
-                if (index === 0) {
-                  const fechaCell = row.insertCell(0);
-                  fechaCell.rowSpan = detalles.length;
-                  fechaCell.textContent = formatChileanDateTime(movimiento.fecha);
-                }
-                
-                // Patente
-                if (index === 0) {
-                  const patenteCell = row.insertCell(1);
-                  patenteCell.rowSpan = detalles.length;
-                  patenteCell.textContent = movimiento.patente;
-                }
-                
-                // Mecánico A
-                if (index === 0) {
-                  const mecanicoCell = row.insertCell(2);
-                  mecanicoCell.rowSpan = detalles.length;
-                  mecanicoCell.textContent = movimiento.mecanicos ? movimiento.mecanicos.nombre : 'N/A';
-                }
-                
-                // Mecánico B
-                if (index === 0) {
-                  const mecanico2Cell = row.insertCell(3);
-                  mecanico2Cell.rowSpan = detalles.length;
-                  mecanico2Cell.textContent = movimiento.mecanicos2 ? movimiento.mecanicos2.nombre : 'N/A';
-                }
-                
-                // Código del producto
-                const codigoCell = row.insertCell(4);
-                codigoCell.textContent = detalle.codigo_producto;
-                
-                // Nombre del producto
-                const nombreCell = row.insertCell(5);
-                nombreCell.textContent = detalle.nombre_producto;
-                
-                // Unidades
-                const unidadesCell = row.insertCell(6);
-                unidadesCell.textContent = detalle.unidades;
-                
-                // Concepto
-                if (index === 0) {
-                  const conceptoCell = row.insertCell(7);
-                  conceptoCell.rowSpan = detalles.length;
-                  conceptoCell.textContent = movimiento.concepto;
-                }
-                
-                // Total del producto
-                const totalCell = row.insertCell(8);
-                totalCell.textContent = '$' + detalle.total.toFixed(2);
-                
-                // Acciones
-                if (index === 0) {
-                  const accionesCell = row.insertCell(9);
-                  accionesCell.rowSpan = detalles.length;
-                  accionesCell.style.whiteSpace = 'nowrap';
-                  
-                  // Botón para ver detalles
-                  const btnVer = document.createElement('button');
-                  btnVer.className = 'btn btn-info btn-sm';
-                  btnVer.innerHTML = '<i class="fas fa-eye"></i>';
-                  btnVer.onclick = () => verDetallesMovimiento(movimiento);
-                  accionesCell.appendChild(btnVer);
-                  
-                  // Botón para editar (solo si es el usuario que lo creó)
-                  if (currentUserId === movimiento.usuario) {
-                    const btnEditar = document.createElement('button');
-                    btnEditar.className = 'btn btn-warning btn-sm';
-                    btnEditar.innerHTML = '<i class="fas fa-edit"></i>';
-                    btnEditar.onclick = () => editarMovimiento(movimiento);
-                    accionesCell.appendChild(btnEditar);
-                    
-                    // Botón para eliminar
-                    const btnEliminar = document.createElement('button');
-                    btnEliminar.className = 'btn btn-danger btn-sm';
-                    btnEliminar.innerHTML = '<i class="fas fa-trash"></i>';
-                    btnEliminar.onclick = () => eliminarMovimiento(movimiento.id);
-                    accionesCell.appendChild(btnEliminar);
-                  }
-                }
-              });
-            } else {
-              // Si no hay detalles, mostrar solo la información del movimiento
-              const row = tbody.insertRow();
-              
-              // Fecha
-              const fechaCell = row.insertCell(0);
-              fechaCell.textContent = formatChileanDateTime(movimiento.fecha);
-              
-              // Patente
-              const patenteCell = row.insertCell(1);
-              patenteCell.textContent = movimiento.patente;
-              
-              // Mecánico A
-              const mecanicoCell = row.insertCell(2);
-              mecanicoCell.textContent = movimiento.mecanicos ? movimiento.mecanicos.nombre : 'N/A';
-              
-              // Mecánico B
-              const mecanico2Cell = row.insertCell(3);
-              mecanico2Cell.textContent = movimiento.mecanicos2 ? movimiento.mecanicos2.nombre : 'N/A';
-              
-              // Código del producto
-              const codigoCell = row.insertCell(4);
-              codigoCell.textContent = 'N/A';
-              
-              // Nombre del producto
-              const nombreCell = row.insertCell(5);
-              nombreCell.textContent = 'N/A';
-              
-              // Unidades
-              const unidadesCell = row.insertCell(6);
-              unidadesCell.textContent = 'N/A';
-              
-              // Concepto
-              const conceptoCell = row.insertCell(7);
-              conceptoCell.textContent = movimiento.concepto;
-              
-              // Total
-              const totalCell = row.insertCell(8);
-              totalCell.textContent = '$' + (movimiento.total || 0).toFixed(2);
-              
-              // Acciones
-              const accionesCell = row.insertCell(9);
-              accionesCell.style.whiteSpace = 'nowrap';
-              
-              // Botón para ver detalles
-              const btnVer = document.createElement('button');
-              btnVer.className = 'btn btn-info btn-sm';
-              btnVer.innerHTML = '<i class="fas fa-eye"></i>';
-              btnVer.onclick = () => verDetallesMovimiento(movimiento);
-              accionesCell.appendChild(btnVer);
-              
-              // Botón para editar (solo si es el usuario que lo creó)
-              if (currentUserId === movimiento.usuario) {
-                const btnEditar = document.createElement('button');
-                btnEditar.className = 'btn btn-warning btn-sm';
-                btnEditar.innerHTML = '<i class="fas fa-edit"></i>';
-                btnEditar.onclick = () => editarMovimiento(movimiento);
-                accionesCell.appendChild(btnEditar);
-                
-                // Botón para eliminar
-                const btnEliminar = document.createElement('button');
-                btnEliminar.className = 'btn btn-danger btn-sm';
-                btnEliminar.innerHTML = '<i class="fas fa-trash"></i>';
-                btnEliminar.onclick = () => eliminarMovimiento(movimiento.id);
-                accionesCell.appendChild(btnEliminar);
-              }
-            }
-          });
-          
-        } catch (error) {
-          console.error('Error al buscar movimientos:', error);
-          mostrarError(`Error al buscar movimientos: ${error.message}`);
-        }
-      }
-      
-      // Ver detalles de un movimiento
-      function verDetallesMovimiento(movimiento) {
-        const printDetails = document.getElementById('print-details');
-        printDetails.innerHTML = '';
-        
-        // Crear tabla de detalles
-        const table = document.createElement('table');
-        table.className = 'tabla-resultados';
-        table.style.width = '100%';
-        
-        // Encabezado
-        const thead = document.createElement('thead');
-        const headerRow = document.createElement('tr');
-        ['Fecha', 'Patente', 'Mecánico A', 'Mecánico B', 'Concepto', 'Total'].forEach(text => {
-          const th = document.createElement('th');
-          th.textContent = text;
-          headerRow.appendChild(th);
-        });
-        thead.appendChild(headerRow);
-        table.appendChild(thead);
-        
-        // Cuerpo
-        const tbody = document.createElement('tbody');
-        const bodyRow = document.createElement('tr');
-        
-        // Fecha
-        const fechaCell = document.createElement('td');
-        fechaCell.textContent = formatChileanDateTime(movimiento.fecha);
-        bodyRow.appendChild(fechaCell);
-        
-        // Patente
-        const patenteCell = document.createElement('td');
-        patenteCell.textContent = movimiento.patente;
-        bodyRow.appendChild(patenteCell);
-        
-        // Mecánico A
-        const mecanicoCell = document.createElement('td');
-        mecanicoCell.textContent = movimiento.mecanicos ? movimiento.mecanicos.nombre : 'N/A';
-        bodyRow.appendChild(mecanicoCell);
-        
-        // Mecánico B
-        const mecanico2Cell = document.createElement('td');
-        mecanico2Cell.textContent = movimiento.mecanicos2 ? movimiento.mecanicos2.nombre : 'N/A';
-        bodyRow.appendChild(mecanico2Cell);
-        
-        // Concepto
-        const conceptoCell = document.createElement('td');
-        conceptoCell.textContent = movimiento.concepto;
-        bodyRow.appendChild(conceptoCell);
-        
-        // Total
-        const totalCell = document.createElement('td');
-        totalCell.textContent = '$' + (movimiento.total || 0).toFixed(2);
-        bodyRow.appendChild(totalCell);
-        
-        tbody.appendChild(bodyRow);
-        table.appendChild(tbody);
-        printDetails.appendChild(table);
-        
-        // Agregar detalles de productos
-        if (movimiento.detalle_movimientos && movimiento.detalle_movimientos.length > 0) {
-          const productosTitle = document.createElement('h3');
-          productosTitle.textContent = 'Productos';
-          productosTitle.style.marginTop = '20px';
-          printDetails.appendChild(productosTitle);
-          
-          const productosTable = document.createElement('table');
-          productosTable.className = 'tabla-resultados';
-          productosTable.style.width = '100%';
-          productosTable.style.marginTop = '10px';
-          
-          // Encabezado de productos
-          const productosThead = document.createElement('thead');
-          const productosHeaderRow = document.createElement('tr');
-          ['Código', 'Nombre', 'Precio Unitario', 'Unidades', 'Total'].forEach(text => {
-            const th = document.createElement('th');
-            th.textContent = text;
-            productosHeaderRow.appendChild(th);
-          });
-          productosThead.appendChild(productosHeaderRow);
-          productosTable.appendChild(productosThead);
-          
-          // Cuerpo de productos
-          const productosTbody = document.createElement('tbody');
-          
-          movimiento.detalle_movimientos.forEach(detalle => {
-            const row = document.createElement('tr');
-            
-            // Código
-            const codigoCell = document.createElement('td');
-            codigoCell.textContent = detalle.codigo_producto;
-            row.appendChild(codigoCell);
-            
-            // Nombre
-            const nombreCell = document.createElement('td');
-            nombreCell.textContent = detalle.nombre_producto;
-            row.appendChild(nombreCell);
-            
-            // Precio Unitario
-            const precioCell = document.createElement('td');
-            precioCell.textContent = '$' + (detalle.precio_unitario || 0).toFixed(2);
-            row.appendChild(precioCell);
-            
-            // Unidades
-            const unidadesCell = document.createElement('td');
-            unidadesCell.textContent = detalle.unidades;
-            row.appendChild(unidadesCell);
-            
-            // Total
-            const totalCell = document.createElement('td');
-            totalCell.textContent = '$' + (detalle.total || 0).toFixed(2);
-            row.appendChild(totalCell);
-            
-            productosTbody.appendChild(row);
-          });
-          
-          productosTable.appendChild(productosTbody);
-          printDetails.appendChild(productosTable);
-        }
-        
-        // Mostrar el modal
-        document.getElementById('print-modal').style.display = 'flex';
-      }
-      
-      // Cerrar modal de impresión
-      function cerrarModalImpresion() {
-        document.getElementById('print-modal').style.display = 'none';
-      }
-      
-      // Imprimir detalles
-      function imprimirDetalles() {
-        window.print();
-      }
-      
-      // Editar un movimiento
-      function editarMovimiento(movimiento) {
-        movimientoEditando = movimiento;
-        
-        // Llenar el formulario de edición
-        document.getElementById('edit-id').value = movimiento.id;
-        document.getElementById('edit-patente').value = movimiento.patente;
-        document.getElementById('edit-mecanico').value = movimiento.mecanico;
-        document.getElementById('edit-mecanico2').value = movimiento.mecanico2 || '';
-        document.getElementById('edit-fecha').value = movimiento.fecha.split('T')[0];
-        document.getElementById('edit-concepto').value = movimiento.concepto;
-        
-        // Limpiar tabla de productos
-        const tbody = document.getElementById('edit-tabla-productos').getElementsByTagName('tbody')[0];
-        tbody.innerHTML = '';
-        
-        // Agregar productos a la tabla
-        if (movimiento.detalle_movimientos && movimiento.detalle_movimientos.length > 0) {
-          movimiento.detalle_movimientos.forEach(detalle => {
-            agregarProductoEdicion({
-              codigo: detalle.codigo_producto,
-              nombre: detalle.nombre_producto,
-              precio: detalle.precio_unitario,
-              unidades: detalle.unidades,
-              existencias: existenciasOriginales[detalle.codigo_producto] || 0
-            });
-          });
-        }
-        
-        // Mostrar el modal de edición
-        document.getElementById('edit-modal').style.display = 'flex';
-      }
-      
-      // Agregar producto a la tabla de edición
+
+      // Función para agregar producto a la tabla de edición
       function agregarProductoEdicion(producto = null) {
-        const id = 'edit-producto-' + contadorProductos++;
         const tbody = document.getElementById('edit-tabla-productos').getElementsByTagName('tbody')[0];
         const row = tbody.insertRow();
-        row.id = id;
-        
-        // Código (con autocompletado desde la base de datos)
+
+        // Código (solo lectura)
         const codigoCell = row.insertCell(0);
         const codigoInput = document.createElement('input');
         codigoInput.type = 'text';
         codigoInput.className = 'form-control';
-        codigoInput.placeholder = 'Código del producto';
-        codigoInput.required = true;
+        codigoInput.readOnly = true;
         if (producto) codigoInput.value = producto.codigo;
-        
-        // Crear datalist para autocompletado de códigos
-        const codigoDatalist = document.createElement('datalist');
-        codigoDatalist.id = `edit-datalist-codigo-${id}`;
-        productosBase.forEach(prod => {
-          const option = document.createElement('option');
-          option.value = prod.codigo;
-          option.dataset.nombre = prod.nombre;
-          option.dataset.precio = prod.precio;
-          option.dataset.existencias = prod.existencias;
-          codigoDatalist.appendChild(option);
-        });
-        
-        codigoInput.setAttribute('list', codigoDatalist.id);
-        codigoInput.addEventListener('change', function() {
-          const selectedOption = document.querySelector(`#${codigoDatalist.id} option[value="${this.value}"]`);
-          if (selectedOption) {
-            const nombre = selectedOption.dataset.nombre;
-            const precio = selectedOption.dataset.precio;
-            const existencias = selectedOption.dataset.existencias;
-            
-            // Actualizar los otros campos
-            row.cells[1].querySelector('input').value = nombre;
-            row.cells[2].querySelector('input').value = precio;
-            
-            // Verificar si hay suficientes existencias
-            verificarExistenciasEdicion(row);
-          }
-        });
-        
         codigoCell.appendChild(codigoInput);
-        codigoCell.appendChild(codigoDatalist);
-        
-        // Nombre del producto
+
+        // Nombre del producto (solo lectura)
         const nombreCell = row.insertCell(1);
         const nombreInput = document.createElement('input');
         nombreInput.type = 'text';
         nombreInput.className = 'form-control';
-        nombreInput.placeholder = 'Nombre del producto';
-        nombreInput.required = true;
+        nombreInput.readOnly = true;
         if (producto) nombreInput.value = producto.nombre;
         nombreCell.appendChild(nombreInput);
-        
-        // Precio unitario
+
+        // Precio Unitario
         const precioCell = row.insertCell(2);
         const precioInput = document.createElement('input');
         precioInput.type = 'number';
         precioInput.className = 'form-control';
         precioInput.min = '0';
         precioInput.step = '0.01';
-        precioInput.placeholder = '0.00';
         precioInput.required = true;
         if (producto) precioInput.value = producto.precio;
-        precioInput.addEventListener('input', () => calcularTotalProductoEdicion(row));
+        precioInput.addEventListener('input', calcularTotalesEdicion);
         precioCell.appendChild(precioInput);
-        
+
         // Unidades
         const unidadesCell = row.insertCell(3);
         const unidadesInput = document.createElement('input');
         unidadesInput.type = 'number';
         unidadesInput.className = 'form-control';
-        unidadesInput.min = '1';
+        unidadesInput.min = '0';
         unidadesInput.step = '1';
-        unidadesInput.value = producto ? producto.unidades : '1';
         unidadesInput.required = true;
-        unidadesInput.addEventListener('input', () => {
-          calcularTotalProductoEdicion(row);
-          verificarExistenciasEdicion(row);
-        });
+        if (producto) unidadesInput.value = producto.unidades;
+        unidadesInput.addEventListener('input', calcularTotalesEdicion);
         unidadesCell.appendChild(unidadesInput);
-        
-        // Total
+
+        // Total (calculado automáticamente)
         const totalCell = row.insertCell(4);
-        totalCell.className = 'total-producto';
-        totalCell.textContent = producto ? '$' + (producto.precio * producto.unidades).toFixed(2) : '$0.00';
-        
+        const totalInput = document.createElement('input');
+        totalInput.type = 'number';
+        totalInput.className = 'form-control total-producto';
+        totalInput.readOnly = true;
+        if (producto) totalInput.value = producto.total;
+        totalCell.appendChild(totalInput);
+
         // Acciones
         const accionesCell = row.insertCell(5);
-        const btnEliminar = document.createElement('button');
-        btnEliminar.type = 'button';
-        btnEliminar.className = 'btn btn-danger btn-sm';
-        btnEliminar.innerHTML = '<i class="fas fa-trash"></i>';
-        btnEliminar.onclick = () => eliminarProductoEdicion(id);
-        accionesCell.appendChild(btnEliminar);
-        
-        // Si es un producto existente, verificar existencias
+        const eliminarBtn = document.createElement('button');
+        eliminarBtn.className = 'btn btn-danger btn-sm';
+        eliminarBtn.innerHTML = '<i class="fas fa-trash"></i>';
+        eliminarBtn.onclick = function() { row.remove(); calcularTotalesEdicion(); };
+        accionesCell.appendChild(eliminarBtn);
+
+        // Calcular total inicial si es un producto existente
         if (producto) {
-          verificarExistenciasEdicion(row);
+          calcularTotalProductoEdicion(row);
         }
       }
-      
-      // Eliminar producto de la tabla de edición
-      function eliminarProductoEdicion(id) {
+
+      // Función para calcular el total de unidades de un producto en la tabla
+      function calcularUnidadesTotalesParaProducto(codigo) {
+        const rows = document.getElementById('tabla-productos').getElementsByTagName('tbody')[0].rows;
+        let totalUnidades = 0;
+
+        for (let i = 0; i < rows.length; i++) {
+          const row = rows[i];
+          const rowCodigo = row.cells[0].getElementsByTagName('input')[0].value;
+          if (rowCodigo === codigo) {
+            const unidades = parseInt(row.cells[3].getElementsByTagName('input')[0].value) || 0;
+            totalUnidades += unidades;
+          }
+        }
+
+        return totalUnidades;
+      }
+
+      // Validar que no se excedan las existencias
+      function validarExistencias(row) {
+        const codigoInput = row.cells[0].getElementsByTagName('input')[0];
+        const unidadesInput = row.cells[3].getElementsByTagName('input')[0];
+        const existenciasContainer = row.cells[5];
+
+        if (codigoInput.value) {
+          const existenciasOriginal = existenciasOriginales[codigoInput.value] || 0;
+          const unidades = parseInt(unidadesInput.value) || 0;
+          const existenciasDisponibles = existenciasOriginal - calcularUnidadesTotalesParaProducto(codigoInput.value);
+
+          if (existenciasDisponibles < 0) {
+            existenciasContainer.classList.add('stock-insuficiente');
+            mostrarError(`No hay suficientes existencias para el producto ${codigoInput.value}`);
+          } else {
+            existenciasContainer.classList.remove('stock-insuficiente');
+          }
+        }
+      }
+
+      // Eliminar un producto de la tabla
+      function eliminarProducto(id) {
         const row = document.getElementById(id);
         if (row) {
+          const codigo = row.cells[0].getElementsByTagName('input')[0].value;
           row.remove();
+
+          // Actualizar existencias de otros productos con el mismo código
+          if (codigo) {
+            const rows = document.getElementById('tabla-productos').getElementsByTagName('tbody')[0].rows;
+            for (let i = 0; i < rows.length; i++) {
+              const currentRow = rows[i];
+              const currentCodigo = currentRow.cells[0].getElementsByTagName('input')[0].value;
+              if (currentCodigo === codigo) {
+                const existenciasOriginal = existenciasOriginales[codigo] || 0;
+                const unidadesEnTabla = calcularUnidadesTotalesParaProducto(codigo);
+                const existenciasDisponibles = existenciasOriginal - unidadesEnTabla;
+
+                const existenciasInput = currentRow.cells[5].getElementsByTagName('input')[0];
+                if (existenciasInput) {
+                  existenciasInput.value = existenciasDisponibles;
+                }
+
+                validarExistencias(currentRow);
+              }
+            }
+          }
+
+          calcularTotales();
         }
       }
-      
-      // Calcular total de producto en edición
-      function calcularTotalProductoEdicion(row) {
-        const precio = parseFloat(row.cells[2].querySelector('input').value) || 0;
-        const unidades = parseInt(row.cells[3].querySelector('input').value) || 0;
+
+      // Calcular total para un producto específico
+      function calcularTotalProducto(row) {
+        const precio = parseFloat(row.cells[2].getElementsByTagName('input')[0].value) || 0;
+        const unidades = parseFloat(row.cells[3].getElementsByTagName('input')[0].value) || 0;
         const total = precio * unidades;
-        row.cells[4].textContent = '$' + total.toFixed(2);
+        row.cells[4].getElementsByTagName('input')[0].value = total.toFixed(2);
+        return total;
       }
-      
-      // Verificar existencias en edición
-      function verificarExistenciasEdicion(row) {
-        const codigoInput = row.cells[0].querySelector('input');
-        const unidadesInput = row.cells[3].querySelector('input');
-        
-        if (!codigoInput.value || !unidadesInput.value) return;
-        
-        const codigo = codigoInput.value;
-        const unidades = parseInt(unidadesInput.value) || 0;
-        const productoBase = productosBase.find(p => p.codigo === codigo);
-        
-        if (productoBase && unidades > productoBase.existencias) {
-          unidadesInput.classList.add('required-field');
-          unidadesInput.title = 'No hay suficientes existencias';
-        } else {
-          unidadesInput.classList.remove('required-field');
-          unidadesInput.title = '';
+
+      // Calcular total para un producto específico en edición
+      function calcularTotalProductoEdicion(row) {
+        const precio = parseFloat(row.cells[2].getElementsByTagName('input')[0].value) || 0;
+        const unidades = parseFloat(row.cells[3].getElementsByTagName('input')[0].value) || 0;
+        const total = precio * unidades;
+        row.cells[4].getElementsByTagName('input')[0].value = total.toFixed(2);
+        return total;
+      }
+
+      // Calcular totales de todos los productos y movimiento
+      function calcularTotales() {
+        const rows = document.getElementById('tabla-productos').getElementsByTagName('tbody')[0].rows;
+        let totalMovimiento = 0;
+
+        for (let i = 0; i < rows.length; i++) {
+          const totalProducto = calcularTotalProducto(rows[i]);
+          totalMovimiento += totalProducto;
+        }
+
+        document.getElementById('total-movimiento').textContent = `Total del Movimiento: $${totalMovimiento.toLocaleString('es-CL')}`;
+      }
+
+      // Calcular totales en la tabla de edición
+      function calcularTotalesEdicion() {
+        const rows = document.getElementById('edit-tabla-productos').getElementsByTagName('tbody')[0].rows;
+        let totalMovimiento = 0;
+
+        for (let i = 0; i < rows.length; i++) {
+          const totalProducto = calcularTotalProductoEdicion(rows[i]);
+          totalMovimiento += totalProducto;
         }
       }
-      
+
+      // Limpiar completamente el formulario
+      function limpiarFormulario() {
+        document.getElementById('form-inventario').reset();
+        document.getElementById('tabla-productos').getElementsByTagName('tbody')[0].innerHTML = '';
+        document.getElementById('total-movimiento').textContent = 'Total del Movimiento: $0';
+        contadorProductos = 0;
+        // Agregar un producto vacío al limpiar
+        agregarProducto();
+        // Establecer fecha actual
+        document.getElementById('fecha').value = getCurrentDateInChile();
+      }
+
+      // Obtener los datos de los productos del formulario
+      function obtenerProductosFormulario() {
+        const rows = document.getElementById('tabla-productos').getElementsByTagName('tbody')[0].rows;
+        const productos = [];
+
+        for (let i = 0; i < rows.length; i++) {
+          const row = rows[i];
+          const codigo = row.cells[0].getElementsByTagName('input')[0].value;
+          const unidades = parseInt(row.cells[3].getElementsByTagName('input')[0].value) || 0;
+
+          // Validar que las unidades no sean 0
+          if (unidades <= 0) {
+            mostrarError('Las unidades deben ser mayor que 0');
+            return null;
+          }
+
+          productos.push({
+            codigo: codigo,
+            nombre: row.cells[1].getElementsByTagName('input')[0].value,
+            precio: parseFloat(row.cells[2].getElementsByTagName('input')[0].value) || 0,
+            unidades: unidades,
+            total: parseFloat(row.cells[4].getElementsByTagName('input')[0].value) || 0,
+            existencias: parseInt(row.cells[5].getElementsByTagName('input')[0].value) || 0
+          });
+        }
+
+        return productos;
+      }
+
+      // Obtener los datos de los productos del formulario de edición
+      function obtenerProductosFormularioEdicion() {
+        const rows = document.getElementById('edit-tabla-productos').getElementsByTagName('tbody')[0].rows;
+        const productos = [];
+
+        for (let i = 0; i < rows.length; i++) {
+          const row = rows[i];
+          const codigo = row.cells[0].getElementsByTagName('input')[0].value;
+          const unidades = parseInt(row.cells[3].getElementsByTagName('input')[0].value) || 0;
+
+          // Validar que las unidades no sean 0
+          if (unidades <= 0) {
+            mostrarError('Las unidades deben ser mayor que 0');
+            return null;
+          }
+
+          productos.push({
+            codigo: codigo,
+            nombre: row.cells[1].getElementsByTagName('input')[0].value,
+            precio: parseFloat(row.cells[2].getElementsByTagName('input')[0].value) || 0,
+            unidades: unidades,
+            total: parseFloat(row.cells[4].getElementsByTagName('input')[0].value) || 0
+          });
+        }
+
+        return productos;
+      }
+
+      // Validar el formulario antes de enviar
+      function validarFormulario() {
+        let valido = true;
+        const patente = document.getElementById('patente').value;
+        const mecanicoAInput = document.getElementById('mecanico').value;
+        const mecanicoBInput = document.getElementById('mecanico2').value;
+        const fecha = document.getElementById('fecha').value;
+        const concepto = document.getElementById('concepto').value;
+        const productos = obtenerProductosFormulario();
+
+        if (productos === null) {
+          return false; // Hubo un error con las unidades
+        }
+
+        // Obtener el ID del mecánico A
+        const mecanicoAOption = document.querySelector(`#mecanicos-list option[value="${mecanicoAInput}"]`);
+        const mecanicoAId = mecanicoAOption ? mecanicoAOption.dataset.id : null;
+        
+        // Obtener el ID del mecánico B
+        const mecanicoBOption = document.querySelector(`#mecanicos-list2 option[value="${mecanicoBInput}"]`);
+        const mecanicoBId = mecanicoBOption ? mecanicoBOption.dataset.id : null;
+
+
+        // Validar campos requeridos
+        if (!patente) {
+          document.getElementById('patente').classList.add('required-field');
+          valido = false;
+        } else {
+          document.getElementById('patente').classList.remove('required-field');
+        }
+
+        if (!mecanicoAInput || !mecanicoAId) {
+          document.getElementById('mecanico').classList.add('required-field');
+          valido = false;
+        } else {
+          document.getElementById('mecanico').classList.remove('required-field');
+        }
+        
+        // No validar mecanico B ya que es opcional
+        if (!fecha) {
+          document.getElementById('fecha').classList.add('required-field');
+          valido = false;
+        } else {
+          document.getElementById('fecha').classList.remove('required-field');
+        }
+
+        if (!concepto) {
+          document.getElementById('concepto').classList.add('required-field');
+          valido = false;
+        } else {
+          document.getElementById('concepto').classList.remove('required-field');
+        }
+
+        // Validar que haya al menos un producto
+        if (productos.length === 0) {
+          mostrarError('Debe agregar al menos un producto');
+          return false;
+        }
+
+        // Validar que todos los productos tengan código y nombre
+        for (const producto of productos) {
+          if (!producto.codigo || !producto.nombre) {
+            mostrarError('Todos los productos deben tener código y nombre');
+            return false;
+          }
+
+          // Validar que no se excedan las existencias
+          const existenciasOriginal = existenciasOriginales[producto.codigo] || 0;
+          if (producto.unidades > existenciasOriginal) {
+            mostrarError(`No hay suficientes existencias para el producto ${producto.codigo}`);
+            return false;
+          }
+        }
+
+        if (!valido) {
+          mostrarError('Por favor complete todos los campos requeridos');
+        }
+
+        return valido;
+      }
+
+      // Validar el formulario de edición
+      function validarFormularioEdicion() {
+        let valido = true;
+        const patente = document.getElementById('edit-patente').value;
+        const mecanicoAInput = document.getElementById('edit-mecanico').value;
+        const mecanicoBInput = document.getElementById('edit-mecanico2').value;
+        const fecha = document.getElementById('edit-fecha').value;
+        const concepto = document.getElementById('edit-concepto').value;
+        const productos = obtenerProductosFormularioEdicion();
+
+        if (productos === null) {
+          return false; // Hubo un error con las unidades
+        }
+        
+        // Obtener el ID del mecánico A
+        const mecanicoAOption = document.querySelector(`#edit-mecanicos-list option[value="${mecanicoAInput}"]`);
+        const mecanicoAId = mecanicoAOption ? mecanicoAOption.dataset.id : null;
+        
+        // Obtener el ID del mecánico B
+        const mecanicoBOption = document.querySelector(`#edit-mecanicos-list2 option[value="${mecanicoBInput}"]`);
+        const mecanicoBId = mecanicoBOption ? mecanicoBOption.dataset.id : null;
+
+
+        // Validar campos requeridos
+        if (!patente) {
+          document.getElementById('edit-patente').classList.add('required-field');
+          valido = false;
+        } else {
+          document.getElementById('edit-patente').classList.remove('required-field');
+        }
+
+        if (!mecanicoAInput || !mecanicoAId) {
+          document.getElementById('edit-mecanico').classList.add('required-field');
+          valido = false;
+        } else {
+          document.getElementById('edit-mecanico').classList.remove('required-field');
+        }
+
+        if (!fecha) {
+          document.getElementById('edit-fecha').classList.add('required-field');
+          valido = false;
+        } else {
+          document.getElementById('edit-fecha').classList.remove('required-field');
+        }
+
+        if (!concepto) {
+          document.getElementById('edit-concepto').classList.add('required-field');
+          valido = false;
+        } else {
+          document.getElementById('edit-concepto').classList.remove('required-field');
+        }
+
+        // Validar que haya al menos un producto
+        if (productos.length === 0) {
+          mostrarError('Debe agregar al menos un producto');
+          return false;
+        }
+
+        // Validar que todos los productos tengan código y nombre
+        for (const producto of productos) {
+          if (!producto.codigo || !producto.nombre) {
+            mostrarError('Todos los productos deben tener código y nombre');
+            return false;
+          }
+        }
+
+        if (!valido) {
+          mostrarError('Por favor complete todos los campos requeridos');
+        }
+
+        return valido;
+      }
+
+      // Mostrar modal de impresión
+      function mostrarModalImpresion(datos) {
+        const modal = document.getElementById('print-modal');
+        const printDetails = document.getElementById('print-details');
+
+        // Construir el contenido del modal
+        let html = `
+          <h3>Detalles del Movimiento</h3>
+          <p><strong>Fecha:</strong> ${datos.fecha}</p>
+          <p><strong>Patente:</strong> ${datos.patente}</p>
+          <p><strong>Mecánico A:</strong> ${datos.mecanicoNombre}</p>
+          ${datos.mecanico2Nombre ? `<p><strong>Mecánico B:</strong> ${datos.mecanico2Nombre}</p>` : ''}
+          <p><strong>Concepto:</strong> ${datos.concepto}</p>
+          
+          <h4>Productos:</h4>
+          <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+            <thead>
+              <tr>
+                <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Código</th>
+                <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Nombre</th>
+                <th style="border: 1px solid #ddd; padding: 8px; text-align: right;">Precio Unitario</th>
+                <th style="border: 1px solid #ddd; padding: 8px; text-align: right;">Unidades</th>
+                <th style="border: 1px solid #ddd; padding: 8px; text-align: right;">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+        `;
+
+        datos.productos.forEach(producto => {
+          html += `
+            <tr>
+              <td style="border: 1px solid #ddd; padding: 8px;">${producto.codigo}</td>
+              <td style="border: 1px solid #ddd; padding: 8px;">${producto.nombre}</td>
+              <td style="border: 1px solid #ddd; padding: 8px; text-align: right;">$${producto.precio.toLocaleString('es-CL')}</td>
+              <td style="border: 1px solid #ddd; padding: 8px; text-align: right;">${producto.unidades}</td>
+              <td style="border: 1px solid #ddd; padding: 8px; text-align: right;">$${producto.total.toLocaleString('es-CL')}</td>
+            </tr>
+          `;
+        });
+
+        html += `
+            </tbody>
+            <tfoot>
+              <tr>
+                <td colspan="4" style="border: 1px solid #ddd; padding: 8px; text-align: right; font-weight: bold;">Total:</td>
+                <td style="border: 1px solid #ddd; padding: 8px; text-align: right; font-weight: bold;">$${datos.totalMovimiento.toLocaleString('es-CL')}</td>
+              </tr>
+            </tfoot>
+          </table>
+        `;
+
+        printDetails.innerHTML = html;
+        modal.style.display = 'flex';
+      }
+
+      // Cerrar modal de impresión
+      function cerrarModalImpresion() {
+        document.getElementById('print-modal').style.display = 'none';
+      }
+
+      // Imprimir detalles
+      function imprimirDetalles() {
+        window.print();
+      }
+
+      // Mostrar modal de edición
+      function mostrarModalEdicion() {
+        document.getElementById('edit-modal').style.display = 'flex';
+      }
+
       // Cerrar modal de edición
       function cerrarModalEdicion() {
         document.getElementById('edit-modal').style.display = 'none';
-        movimientoEditando = null;
       }
-      
-      // Guardar cambios en la edición
-      async function guardarCambiosEdicion(event) {
-        event.preventDefault();
-        
-        const movimientoId = document.getElementById('edit-id').value;
-        const patente = document.getElementById('edit-patente').value.trim();
-        const mecanico = document.getElementById('edit-mecanico').value;
-        const mecanico2 = document.getElementById('edit-mecanico2').value;
-        const fecha = document.getElementById('edit-fecha').value;
-        const concepto = document.getElementById('edit-concepto').value.trim();
-        
-        if (!patente || !mecanico || !fecha || !concepto) {
-          mostrarError('Por favor, complete todos los campos obligatorios.');
+
+      // Manejar envío del formulario
+      document.getElementById('form-inventario').addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        // Validar el formulario antes de continuar
+        if (!validarFormulario()) {
           return;
         }
+
+        const patente = document.getElementById('patente').value;
+        const mecanicoAInput = document.getElementById('mecanico').value;
+        const mecanicoBInput = document.getElementById('mecanico2').value;
+        const fecha = document.getElementById('fecha').value;
+        const concepto = document.getElementById('concepto').value;
+        const productos = obtenerProductosFormulario();
         
-        // Obtener productos de la tabla
-        const productos = [];
-        const tbody = document.getElementById('edit-tabla-productos').getElementsByTagName('tbody')[0];
-        const rows = tbody.getElementsByTagName('tr');
+        const mecanicoAOption = document.querySelector(`#mecanicos-list option[value="${mecanicoAInput}"]`);
+        const mecanicoAId = mecanicoAOption ? mecanicoAOption.dataset.id : null;
         
-        if (rows.length === 0) {
-          mostrarError('Debe agregar al menos un producto al movimiento.');
-          return;
-        }
-        
-        let hayErrores = false;
-        
-        for (let i = 0; i < rows.length; i++) {
-          const row = rows[i];
-          const codigo = row.cells[0].querySelector('input').value.trim();
-          const nombre = row.cells[1].querySelector('input').value.trim();
-          const precio = parseFloat(row.cells[2].querySelector('input').value) || 0;
-          const unidades = parseInt(row.cells[3].querySelector('input').value) || 0;
-          
-          if (!codigo || !nombre || precio <= 0 || unidades <= 0) {
-            mostrarError('Todos los campos de producto son obligatorios y deben tener valores válidos.');
-            hayErrores = true;
-            break;
-          }
-          
-          const productoBase = productosBase.find(p => p.codigo === codigo);
-          if (productoBase && unidades > productoBase.existencias) {
-            mostrarError(`No hay suficientes existencias para el producto ${nombre}. Existencias disponibles: ${productoBase.existencias}`);
-            hayErrores = true;
-            break;
-          }
-          
-          productos.push({
-            codigo,
-            nombre,
-            precio,
-            unidades,
-            total: precio * unidades
-          });
-        }
-        
-        if (hayErrores) return;
-        
+        const mecanicoBOption = document.querySelector(`#mecanicos-list2 option[value="${mecanicoBInput}"]`);
+        const mecanicoBId = mecanicoBOption ? mecanicoBOption.dataset.id : null;
+
+
         try {
-          // Actualizar el movimiento
-          const { error: movimientoError } = await supabaseClient
-            .from('movimientos_inventario')
-            .update({
-              patente,
-              mecanico,
-              mecanico2: mecanico2 || null,
-              fecha,
-              concepto,
-              total: productos.reduce((sum, p) => sum + p.total, 0)
-            })
-            .eq('id', movimientoId);
-          
-          if (movimientoError) throw movimientoError;
-          
-          // Obtener los detalles actuales para restaurar existencias
-          const { data: detallesActuales, error: detallesError } = await supabaseClient
-            .from('detalle_movimientos')
-            .select('codigo_producto, unidades')
-            .eq('movimiento_id', movimientoId);
-          
-          if (detallesError) throw detallesError;
-          
-          // Restaurar existencias de los productos originales
-          for (const detalle of detallesActuales) {
-            const productoBase = productosBase.find(p => p.codigo === detalle.codigo_producto);
-            if (productoBase) {
-              const nuevasExistencias = productoBase.existencias + detalle.unidades;
-              
-              const { error: updateError } = await supabaseClient
-                .from('productos')
-                .update({ existencias: nuevasExistencias })
-                .eq('codigo', detalle.codigo_producto);
-              
-              if (updateError) throw updateError;
-              
-              productoBase.existencias = nuevasExistencias;
-            }
+          // Obtener nombre del mecánico A
+          const mecanicoA = mecanicosBase.find(m => m.id == mecanicoAId);
+          if (!mecanicoA) {
+            throw new Error('Mecánico A no encontrado');
           }
-          
-          // Eliminar los detalles actuales
-          const { error: deleteError } = await supabaseClient
-            .from('detalle_movimientos')
-            .delete()
-            .eq('movimiento_id', movimientoId);
-          
-          if (deleteError) throw deleteError;
-          
-          // Insertar los nuevos detalles
-          for (const producto of productos) {
-            const { error: detalleError } = await supabaseClient
-              .from('detalle_movimientos')
+
+          // Insertar cada producto como un registro individual en la tabla 'registros'
+          const inserts = productos.map(async producto => {
+            const { error } = await supabaseClient
+              .from('registros')
               .insert([
                 {
-                  movimiento_id: movimientoId,
-                  codigo_producto: producto.codigo,
-                  nombre_producto: producto.nombre,
-                  precio_unitario: producto.precio,
+                  patente: patente,
+                  codigo: producto.codigo,
+                  fecha: fecha,
+                  nombre: producto.nombre,
+                  precio: producto.precio,
+                  concepto: concepto,
+                  estado: 'salida',
                   unidades: producto.unidades,
-                  total: producto.total
+                  precio_total: producto.total,
+                  creado_en: new Date().toISOString(),
+                  mecanico_id: mecanicoAId,
+                  mecanico2_id: mecanicoBId
                 }
               ]);
-            
-            if (detalleError) throw detalleError;
-            
-            // Actualizar existencias del producto
-            const productoBase = productosBase.find(p => p.codigo === producto.codigo);
-            if (productoBase) {
-              const nuevasExistencias = productoBase.existencias - producto.unidades;
-              
-              const { error: updateError } = await supabaseClient
-                .from('productos')
-                .update({ existencias: nuevasExistencias })
-                .eq('codigo', producto.codigo);
-              
-              if (updateError) throw updateError;
-              
-              productoBase.existencias = nuevasExistencias;
-            }
-          }
-          
-          mostrarExito('Movimiento actualizado correctamente.');
-          cerrarModalEdicion();
-          buscarMovimientos();
-          
+
+            if (error) throw error;
+
+            // Actualizar existencias en el catálogo de productos
+            const existenciasActuales = existenciasOriginales[producto.codigo] || 0;
+            const nuevasExistencias = existenciasActuales - (parseInt(producto.unidades) || 0);
+
+            const { error: errorUpdate } = await supabaseClient
+              .from('productos')
+              .update({ 
+                existencias: nuevasExistencias,
+                updated_at: new Date().toISOString()
+              })
+              .eq('codigo', producto.codigo);
+
+            if (errorUpdate) throw errorUpdate;
+
+            // Actualizar las existencias originales en memoria
+            existenciasOriginales[producto.codigo] = nuevasExistencias;
+
+            return { codigo: producto.codigo, nuevasExistencias };
+          });
+
+          await Promise.all(inserts);
+
+          mostrarExito('Movimiento de inventario registrado correctamente');
+
+          limpiarFormulario();
+          buscarMovimientos(); // Actualizar la tabla
         } catch (error) {
-          console.error('Error al actualizar el movimiento:', error);
-          mostrarError(`Error al actualizar el movimiento: ${error.message}`);
+          console.error('Error al registrar movimiento:', error);
+          mostrarError('Error al registrar el movimiento: ' + error.message);
         }
-      }
-      
-      // Eliminar un movimiento
-      async function eliminarMovimiento(id) {
-        if (!confirm('¿Está seguro de que desea eliminar este movimiento? Esta acción no se puede deshacer.')) {
+      });
+
+      // Manejar envío del formulario de edición
+      document.getElementById('form-edicion').addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        // Validar el formulario antes de continuar
+        if (!validarFormularioEdicion()) {
           return;
         }
+
+        const movimientoId = document.getElementById('edit-id').value;
+        const patente = document.getElementById('edit-patente').value;
+        const mecanicoAInput = document.getElementById('edit-mecanico').value;
+        const mecanicoBInput = document.getElementById('edit-mecanico2').value;
+        const fecha = document.getElementById('edit-fecha').value;
+        const concepto = document.getElementById('edit-concepto').value;
+        const productos = obtenerProductosFormularioEdicion();
         
+        const mecanicoAOption = document.querySelector(`#edit-mecanicos-list option[value="${mecanicoAInput}"]`);
+        const mecanicoAId = mecanicoAOption ? mecanicoAOption.dataset.id : null;
+        
+        const mecanicoBOption = document.querySelector(`#edit-mecanicos-list2 option[value="${mecanicoBInput}"]`);
+        const mecanicoBId = mecanicoBOption ? mecanicoBOption.dataset.id : null;
+
+
         try {
-          // Obtener los detalles para restaurar existencias
-          const { data: detalles, error: detallesError } = await supabaseClient
-            .from('detalle_movimientos')
-            .select('codigo_producto, unidades')
-            .eq('movimiento_id', id);
-          
-          if (detallesError) throw detallesError;
-          
-          // Restaurar existencias
-          for (const detalle of detalles) {
-            const productoBase = productosBase.find(p => p.codigo === detalle.codigo_producto);
-            if (productoBase) {
-              const nuevasExistencias = productoBase.existencias + detalle.unidades;
-              
-              const { error: updateError } = await supabaseClient
-                .from('productos')
-                .update({ existencias: nuevasExistencias })
-                .eq('codigo', detalle.codigo_producto);
-              
-              if (updateError) throw updateError;
-              
-              productoBase.existencias = nuevasExistencias;
-            }
+          // Obtener el movimiento original para comparar
+          const { data: movimientoOriginal, error: errorGetOriginal } = await supabaseClient
+            .from('registros')
+            .select('*')
+            .eq('id', movimientoId)
+            .single();
+
+          if (errorGetOriginal) throw errorGetOriginal;
+
+          // Obtener nombre del mecánico A
+          const mecanicoA = mecanicosBase.find(m => m.id == mecanicoAId);
+          if (!mecanicoA) {
+            throw new Error('Mecánico A no encontrado');
           }
-          
-          // Eliminar los detalles
-          const { error: deleteDetallesError } = await supabaseClient
-            .from('detalle_movimientos')
-            .delete()
-            .eq('movimiento_id', id);
-          
-          if (deleteDetallesError) throw deleteDetallesError;
-          
-          // Eliminar el movimiento
-          const { error: deleteMovimientoError } = await supabaseClient
-            .from('movimientos_inventario')
-            .delete()
-            .eq('id', id);
-          
-          if (deleteMovimientoError) throw deleteMovimientoError;
-          
-          mostrarExito('Movimiento eliminado correctamente.');
-          buscarMovimientos();
-          
+
+          // Actualizar el movimiento en la base de datos
+          const { error: errorUpdate } = await supabaseClient
+            .from('registros')
+            .update({
+              patente: patente,
+              codigo: productos[0].codigo,
+              fecha: fecha,
+              nombre: productos[0].nombre,
+              precio: productos[0].precio,
+              concepto: concepto,
+              unidades: productos[0].unidades,
+              precio_total: productos[0].total,
+              mecanico_id: mecanicoAId,
+              mecanico2_id: mecanicoBId,
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', movimientoId);
+
+          if (errorUpdate) throw errorUpdate;
+
+          // Manejar la diferencia en las existencias
+          const diferenciaUnidades = movimientoOriginal.unidades - productos[0].unidades;
+
+          if (diferenciaUnidades !== 0) {
+            // Obtener las existencias actuales del producto
+            const { data: producto, error: errorProducto } = await supabaseClient
+              .from('productos')
+              .select('existencias')
+              .eq('codigo', productos[0].codigo)
+              .single();
+
+            if (errorProducto) throw errorProducto;
+
+            // Calcular nuevas existencias
+            let nuevasExistencias = (producto.existencias || 0);
+
+            if (diferenciaUnidades > 0) {
+              // Se redujo la cantidad, sumar la diferencia a las existencias
+              nuevasExistencias += diferenciaUnidades;
+            } else {
+              // Se aumentó la cantidad, restar la diferencia de las existencias
+              nuevasExistencias -= Math.abs(diferenciaUnidades);
+            }
+
+            // Actualizar existencias en el catálogo de productos
+            const { error: errorUpdateExistencias } = await supabaseClient
+              .from('productos')
+              .update({ 
+                existencias: nuevasExistencias,
+                updated_at: new Date().toISOString()
+              })
+              .eq('codigo', productos[0].codigo);
+
+            if (errorUpdateExistencias) throw errorUpdateExistencias;
+
+            // Actualizar las existencias originales en memoria
+            existenciasOriginales[productos[0].codigo] = nuevasExistencias;
+          }
+
+          mostrarExito('Movimiento actualizado correctamente');
+          cerrarModalEdicion();
+          buscarMovimientos(); // Actualizar la tabla
         } catch (error) {
-          console.error('Error al eliminar el movimiento:', error);
-          mostrarError(`Error al eliminar el movimiento: ${error.message}`);
+          console.error('Error al actualizar movimiento:', error);
+          mostrarError('Error al actualizar el movimiento: ' + error.message);
+        }
+      });
+
+      // Función para buscar movimientos - MODIFICADO: Solo muestra salidas
+      async function buscarMovimientos() {
+        const terminoBusqueda = document.getElementById('buscar-producto').value;
+        const resultadosContainer = document.getElementById('resultados-container');
+        const tablaResultados = document.getElementById('tabla-resultados').getElementsByTagName('tbody')[0];
+
+        try {
+          // Obtenemos los movimientos de la tabla 'registros' con estado 'salida'
+          let query = supabaseClient
+            .from('registros')
+            .select('*')
+            .eq('estado', 'salida') // Solo movimientos de salida
+            .order('fecha', { ascending: false })
+            .order('creado_en', { ascending: false });
+
+          if (terminoBusqueda) {
+            query = query.or(`patente.ilike.%${terminoBusqueda}%,concepto.ilike.%${terminoBusqueda}%,nombre.ilike.%${terminoBusqueda}%`);
+          }
+
+          const { data: movimientos, error } = await query;
+
+          if (error) throw error;
+
+          tablaResultados.innerHTML = '';
+
+          if (movimientos.length === 0) {
+            tablaResultados.innerHTML = '<tr><td colspan="9" style="text-align: center;">No se encontraron movimientos</td></tr>';
+          } else {
+            movimientos.forEach(movimiento => {
+              const row = tablaResultados.insertRow();
+
+              // Fecha (formato chileno)
+              const fechaCell = row.insertCell(0);
+              fechaCell.textContent = formatChileanDateTime(movimiento.fecha);
+
+              // Patente
+              const patenteCell = row.insertCell(1);
+              patenteCell.textContent = movimiento.patente || '-';
+
+              // Mecánico A (buscamos el nombre en la lista de mecánicos)
+              const mecanicoA_Cell = row.insertCell(2);
+              const mecanicoA = mecanicosBase.find(m => m.id == movimiento.mecanico_id);
+              mecanicoA_Cell.textContent = mecanicoA ? mecanicoA.nombre : '-';
+              
+              // Mecánico B
+              const mecanicoB_Cell = row.insertCell(3);
+              const mecanicoB = mecanicosBase.find(m => m.id == movimiento.mecanico2_id);
+              mecanicoB_Cell.textContent = mecanicoB ? mecanicoB.nombre : '-';
+
+
+              // Código del producto
+              const codigoCell = row.insertCell(4);
+              codigoCell.textContent = movimiento.codigo || '-';
+
+              // Nombre del producto
+              const nombreCell = row.insertCell(5);
+              nombreCell.textContent = movimiento.nombre || '-';
+
+              // Unidades
+              const unidadesCell = row.insertCell(6);
+              unidadesCell.textContent = movimiento.unidades || '0';
+
+              // Concepto
+              const conceptoCell = row.insertCell(7);
+              conceptoCell.textContent = movimiento.concepto || '-';
+
+              // Total
+              const totalCell = row.insertCell(8);
+              totalCell.textContent = '$' + (movimiento.precio_total || 0).toLocaleString('es-CL');
+
+              // Acciones
+              const accionesCell = row.insertCell(9);
+
+              // Botón de edición
+              const editarBtn = document.createElement('button');
+              editarBtn.className = 'btn btn-warning btn-sm';
+              editarBtn.innerHTML = '<i class="fas fa-edit"></i>';
+              editarBtn.onclick = function() { cargarMovimientoParaEdicion(movimiento); };
+              accionesCell.appendChild(editarBtn);
+
+              // Botón de eliminación
+              const eliminarBtn = document.createElement('button');
+              eliminarBtn.className = 'btn btn-danger btn-sm';
+              eliminarBtn.innerHTML = '<i class="fas fa-trash"></i>';
+              eliminarBtn.onclick = function() { eliminarMovimiento(movimiento.id); };
+              accionesCell.appendChild(eliminarBtn);
+            });
+          }
+
+          resultadosContainer.style.display = 'block';
+        } catch (error) {
+          console.error('Error al buscar movimientos:', error);
+          mostrarError('Error al buscar movimientos: ' + error.message);
         }
       }
-      
-      // Inicializar la aplicación cuando se carga la página
-      document.addEventListener('DOMContentLoaded', function() {
-        // Establecer la fecha actual
+
+      // Cargar movimiento para edición en el modal
+      async function cargarMovimientoParaEdicion(movimiento) {
+        try {
+          movimientoEditando = movimiento;
+
+          // Llenar los campos del formulario de edición
+          document.getElementById('edit-id').value = movimiento.id;
+          document.getElementById('edit-patente').value = movimiento.patente;
+          
+          // Buscar el nombre del mecánico A usando el ID
+          const mecanicoA = mecanicosBase.find(m => m.id === movimiento.mecanico_id);
+          document.getElementById('edit-mecanico').value = mecanicoA ? mecanicoA.nombre : '';
+          
+          // Buscar el nombre del mecánico B usando el ID
+          const mecanicoB = mecanicosBase.find(m => m.id === movimiento.mecanico2_id);
+          document.getElementById('edit-mecanico2').value = mecanicoB ? mecanicoB.nombre : '';
+
+
+          document.getElementById('edit-fecha').value = movimiento.fecha;
+          document.getElementById('edit-concepto').value = movimiento.concepto;
+
+          // Limpiar la tabla de productos
+          document.getElementById('edit-tabla-productos').getElementsByTagName('tbody')[0].innerHTML = '';
+
+          // Agregar el producto del movimiento
+          agregarProductoEdicion({
+            codigo: movimiento.codigo,
+            nombre: movimiento.nombre,
+            precio: movimiento.precio,
+            unidades: movimiento.unidades,
+            total: movimiento.precio_total
+          });
+
+          // Mostrar el modal de edición
+          mostrarModalEdicion();
+        } catch (error) {
+          console.error('Error al cargar movimiento para edición:', error);
+          mostrarError('Error al cargar movimiento para edición: ' + error.message);
+        }
+      }
+
+      // Función para eliminar un movimiento
+      async function eliminarMovimiento(id) {
+        if (!confirm('¿Está seguro que desea eliminar este movimiento?')) {
+          return;
+        }
+
+        try {
+          // Primero necesitamos obtener el movimiento para actualizar las existencias
+          const { data: movimiento, error: errorGet } = await supabaseClient
+            .from('registros')
+            .select('*')
+            .eq('id', id)
+            .single();
+
+          if (errorGet) throw errorGet;
+
+          // Si el movimiento es de tipo "salida", debemos devolver las unidades al inventario
+          if (movimiento.estado === 'salida') {
+            const { data: producto, error: errorProducto } = await supabaseClient
+              .from('productos')
+              .select('existencias')
+              .eq('codigo', movimiento.codigo)
+              .single();
+
+            if (errorProducto) throw errorProducto;
+
+            const nuevasExistencias = (producto.existencias || 0) + (movimiento.unidades || 0);
+
+            const { error: errorUpdate } = await supabaseClient
+              .from('productos')
+              .update({ 
+                existencias: nuevasExistencias,
+                updated_at: new Date().toISOString()
+              })
+              .eq('codigo', movimiento.codigo);
+
+            if (errorUpdate) throw errorUpdate;
+
+            // Actualizar las existencias originales en memoria
+            existenciasOriginales[movimiento.codigo] = nuevasExistencias;
+          }
+
+          // Ahora podemos eliminar el movimiento
+          const { error } = await supabaseClient
+            .from('registros')
+            .delete()
+            .eq('id', id);
+
+          if (error) throw error;
+
+          mostrarExito('Movimiento eliminado correctamente');
+          buscarMovimientos(); // Actualizar la tabla
+        } catch (error) {
+          console.error('Error al eliminar movimiento:', error);
+          mostrarError('Error al eliminar el movimiento: ' + error.message);
+        }
+      }
+
+      // Mostrar mensaje de error
+      function mostrarError(mensaje) {
+        const errorElement = document.getElementById('error-message');
+        errorElement.textContent = mensaje;
+        errorElement.style.display = 'block';
+
+        setTimeout(() => {
+          errorElement.style.display = 'none';
+        }, 5000);
+      }
+
+      // Mostrar mensaje de éxito
+      function mostrarExito(mensaje) {
+        const successElement = document.getElementById('success-message');
+        successElement.textContent = mensaje;
+        successElement.style.display = 'block';
+
+        setTimeout(() => {
+          successElement.style.display = 'none';
+        }, 3000);
+      }
+
+      // Inicializar la aplicación cuando se cargue la página
+      document.addEventListener('DOMContentLoaded', async function() {
+        // Establecer fecha actual por defecto (hora de Chile)
         document.getElementById('fecha').value = getCurrentDateInChile();
-        
-        // Inicializar Supabase
-        inicializarSupabase();
-        
-        // Agregar evento al formulario
-        document.getElementById('form-inventario').addEventListener('submit', guardarMovimiento);
-        
-        // Agregar evento al formulario de edición
-        document.getElementById('form-edicion').addEventListener('submit', guardarCambiosEdicion);
-        
-        // Mostrar el historial al cargar la página
-        document.getElementById('resultados-container').style.display = 'block';
-        buscarMovimientos();
+
+        await inicializarSupabase();
+        buscarMovimientos(); // Cargar movimientos al iniciar
+
+        // Agregar un producto vacío al inicio
+        agregarProducto();
       });
     </script>
   </div>
