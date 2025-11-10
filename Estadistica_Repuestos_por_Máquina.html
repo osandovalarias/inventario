@@ -1,0 +1,1294 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Control de Inventario - Repuestos por Máquina</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    :root {
+      --color-primary: #3f72af;
+      --color-secondary: #dbe2ef;
+      --color-text: #112d4e;
+      --color-accent: #2c5282;
+      --color-success: #2ecc71;
+      --color-error: #e74c3c;
+      --color-warning: #f39c12;
+      --border-radius: 8px;
+      --box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      --header-bg-color: #2c5282;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: linear-gradient(135deg, #3f72af, #dbe2ef);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: var(--color-text);
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .header-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 20px;
+      margin-bottom: 20px;
+      background-color: var(--header-bg-color);
+      padding: 20px;
+      border-radius: var(--border-radius);
+      box-shadow: var(--box-shadow);
+      color: white;
+    }
+
+    h1, h2, h3 {
+      text-align: center;
+      color: white;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid var(--color-secondary);
+    }
+
+    h2 {
+      margin-top: 30px;
+      font-size: 1.5rem;
+    }
+
+    h3 {
+      text-align: left;
+      color: var(--color-primary);
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+
+    .logo-container {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .logo {
+      width: 60px;
+      height: 60px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      background-color: white;
+      padding: 5px;
+    }
+
+    .logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .title-container {
+      flex: 1;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #dbe2ef;
+      margin-top: -10px;
+      font-size: 1.1rem;
+    }
+
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: var(--border-radius);
+      color: white;
+      cursor: pointer;
+      font-size: 1rem;
+      font-weight: 600;
+      transition: all 0.3s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin: 5px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .btn-primary {
+      background: var(--color-primary);
+    }
+
+    .btn-primary:hover {
+      background: var(--color-accent);
+      transform: translateY(-2px);
+    }
+
+    .btn-secondary {
+      background: #6c757d;
+    }
+
+    .btn-secondary:hover {
+      background: #5a6268;
+      transform: translateY(-2px);
+    }
+
+    .btn-success {
+      background: var(--color-success);
+    }
+
+    .btn-success:hover {
+      background: #27ae60;
+      transform: translateY(-2px);
+    }
+
+    .btn-danger {
+      background: var(--color-error);
+    }
+
+    .btn-danger:hover {
+      background: #c0392b;
+      transform: translateY(-2px);
+    }
+
+    .btn-info {
+      background: var(--color-primary);
+    }
+
+    .btn-info:hover {
+      background: var(--color-accent);
+      transform: translateY(-2px);
+    }
+
+    .btn-print {
+      background: #17a2b8;
+    }
+
+    .btn-print:hover {
+      background: #138496;
+      transform: translateY(-2px);
+    }
+
+    .btn-sm {
+      padding: 6px 12px;
+      font-size: 0.9rem;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 10px;
+      margin: 15px 0;
+    }
+
+    .status-message {
+      padding: 15px;
+      margin: 15px 0;
+      border-radius: var(--border-radius);
+      text-align: center;
+      font-weight: 500;
+    }
+
+    .error {
+      background-color: #f8d7da;
+      color: var(--color-error);
+      border-left: 4px solid var(--color-error);
+    }
+
+    .success {
+      background-color: #d4edda;
+      color: var(--color-success);
+      border-left: 4px solid var(--color-success);
+    }
+
+    .info {
+      background-color: #e7f5ff;
+      color: var(--color-primary);
+      border-left: 4px solid var(--color-primary);
+    }
+
+    .connection-status {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      padding: 10px 15px;
+      border-radius: var(--border-radius);
+      font-weight: 500;
+      box-shadow: var(--box-shadow);
+      z-index: 100;
+    }
+
+    .connection-success {
+      background-color: var(--color-success);
+      color: white;
+    }
+
+    .connection-error {
+      background-color: var(--color-error);
+      color: white;
+    }
+
+    .connection-loading {
+      background-color: var(--color-primary);
+      color: white;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .input-group {
+      margin-bottom: 15px;
+    }
+
+    .input-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 600;
+      color: var(--color-primary);
+    }
+
+    .input-group input, 
+    .input-group select, 
+    .input-group textarea {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid #ddd;
+      border-radius: var(--border-radius);
+      font-size: 1rem;
+    }
+
+    .form-container {
+      background-color: white;
+      padding: 20px;
+      border-radius: var(--border-radius);
+      box-shadow: var(--box-shadow);
+      margin-bottom: 20px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 15px;
+    }
+
+    .form-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .resultados-container {
+      background-color: white;
+      padding: 20px;
+      border-radius: var(--border-radius);
+      box-shadow: var(--box-shadow);
+      margin-top: 20px;
+    }
+
+    .tabla-resultados {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+
+    .tabla-resultados th {
+      background-color: var(--color-primary);
+      color: white;
+      padding: 10px;
+      text-align: left;
+    }
+
+    .tabla-resultados td {
+      padding: 8px 10px;
+      border-bottom: 1px solid #ddd;
+    }
+
+    .tabla-resultados tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+
+    .tabla-resultados tr:hover {
+      background-color: #f1f1f1;
+    }
+
+    /* Estilos para gráficos */
+    .charts-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+      gap: 20px;
+      margin-top: 20px;
+    }
+
+    .chart-card {
+      background-color: white;
+      padding: 20px;
+      border-radius: var(--border-radius);
+      box-shadow: var(--box-shadow);
+    }
+
+    .chart-title {
+      text-align: center;
+      margin-bottom: 15px;
+      color: var(--color-primary);
+    }
+
+    .chart-wrapper {
+      position: relative;
+      height: 300px;
+    }
+
+    /* Estilos para filtros */
+    .filters-container {
+      background-color: white;
+      padding: 20px;
+      border-radius: var(--border-radius);
+      box-shadow: var(--box-shadow);
+      margin-bottom: 20px;
+    }
+
+    .filter-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+
+    .filter-group {
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .period-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .period-btn {
+      padding: 8px 15px;
+      border: 1px solid var(--color-primary);
+      background-color: white;
+      color: var(--color-primary);
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .period-btn.active {
+      background-color: var(--color-primary);
+      color: white;
+    }
+
+    .period-btn:hover {
+      background-color: var(--color-secondary);
+    }
+
+    /* Estilos para estadísticas */
+    .stats-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .stat-card {
+      background-color: white;
+      padding: 15px;
+      border-radius: var(--border-radius);
+      box-shadow: var(--box-shadow);
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 1.8rem;
+      font-weight: bold;
+      color: var(--color-primary);
+    }
+
+    .stat-label {
+      font-size: 0.9rem;
+      color: #666;
+    }
+
+    @media print {
+      body {
+        background: white;
+        color: black;
+        padding: 0;
+      }
+
+      .header-container {
+        background-color: white !important;
+        color: black !important;
+        box-shadow: none;
+        border: 1px solid #ddd;
+      }
+
+      h1, h2, h3 {
+        color: black !important;
+      }
+
+      .btn, .btn-group {
+        display: none !important;
+      }
+
+      .container {
+        max-width: 100%;
+        margin: 0;
+        padding: 10px;
+      }
+
+      .subtitle {
+        color: #555 !important;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .charts-container {
+        grid-template-columns: 1fr;
+      }
+      
+      .chart-card {
+        padding: 15px;
+      }
+      
+      .chart-wrapper {
+        height: 250px;
+      }
+      
+      .filter-row {
+        flex-direction: column;
+      }
+      
+      .filter-group {
+        min-width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header-container">
+      <div class="logo-container">
+        <div class="logo">
+          <img src="img/logo.png" alt="Logo">
+        </div>
+        <div>
+          <h1>Control de Inventario</h1>
+          <div class="subtitle">Análisis de Repuestos por Máquina</div>
+        </div>
+      </div>
+      <div class="btn-group">
+        <button class="btn btn-secondary" onclick="window.location.href='menu.html'">
+          <i class="fas fa-arrow-left"></i> Volver
+        </button>
+        <button class="btn btn-print" onclick="window.print()">
+          <i class="fas fa-print"></i> Imprimir
+        </button>
+      </div>
+    </div>
+
+    <div id="error-message" class="status-message error" style="display: none;"></div>
+    <div id="success-message" class="status-message success" style="display: none;"></div>
+
+    <div class="filters-container">
+      <h3>Filtros de Consulta</h3>
+      <div class="filter-row">
+        <div class="filter-group">
+          <label for="fecha-inicio">Fecha de Inicio:</label>
+          <input type="date" id="fecha-inicio">
+        </div>
+        <div class="filter-group">
+          <label for="fecha-fin">Fecha de Fin:</label>
+          <input type="date" id="fecha-fin">
+        </div>
+        <div class="filter-group">
+          <label for="patente-filtro">Patente:</label>
+          <select id="patente-filtro">
+            <option value="">Todas las máquinas</option>
+          </select>
+        </div>
+      </div>
+      
+      <div class="filter-row">
+        <div class="filter-group">
+          <label>Período de Tiempo:</label>
+          <div class="period-buttons">
+            <button class="period-btn active" data-period="day">Día</button>
+            <button class="period-btn" data-period="week">Semana</button>
+            <button class="period-btn" data-period="month">Mes</button>
+            <button class="period-btn" data-period="bimester">Bimestre</button>
+            <button class="period-btn" data-period="trimester">Trimestre</button>
+            <button class="period-btn" data-period="quarter">Cuatrimestre</button>
+            <button class="period-btn" data-period="semester">Semestre</button>
+            <button class="period-btn" data-period="year">Año</button>
+          </div>
+        </div>
+      </div>
+      
+      <div class="form-actions">
+        <button class="btn btn-secondary" onclick="limpiarFiltros()">
+          <i class="fas fa-times"></i> Limpiar
+        </button>
+        <button class="btn btn-primary" onclick="cargarDatos()">
+          <i class="fas fa-search"></i> Aplicar Filtros
+        </button>
+      </div>
+    </div>
+
+    <div class="stats-container" id="stats-container">
+      <!-- Las estadísticas se cargarán dinámicamente -->
+    </div>
+
+    <div class="resultados-container">
+      <h3>Gráficos de Repuestos por Máquina</h3>
+      <div class="charts-container">
+        <div class="chart-card">
+          <h4 class="chart-title">Repuestos Más Utilizados</h4>
+          <div class="chart-wrapper">
+            <canvas id="chart-repuestos-mas-usados"></canvas>
+          </div>
+        </div>
+        <div class="chart-card">
+          <h4 class="chart-title">Repuestos por Máquina</h4>
+          <div class="chart-wrapper">
+            <canvas id="chart-repuestos-por-maquina"></canvas>
+          </div>
+        </div>
+        <div class="chart-card">
+          <h4 class="chart-title">Evolución Mensual</h4>
+          <div class="chart-wrapper">
+            <canvas id="chart-evolucion-mensual"></canvas>
+          </div>
+        </div>
+        <div class="chart-card">
+          <h4 class="chart-title">Distribución por Concepto</h4>
+          <div class="chart-wrapper">
+            <canvas id="chart-distribucion-concepto"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="resultados-container">
+      <h3>Detalle de Repuestos por Máquina</h3>
+      <table class="tabla-resultados" id="tabla-detalle">
+        <thead>
+          <tr>
+            <th>Patente</th>
+            <th>Producto</th>
+            <th>Código</th>
+            <th>Unidades</th>
+            <th>Total ($)</th>
+            <th>Fecha</th>
+            <th>Concepto</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Los datos se cargarán dinámicamente -->
+        </tbody>
+      </table>
+    </div>
+
+    <div id="connection-status" class="connection-status connection-loading" style="display: none;">
+      <i class="fas fa-circle-notch fa-spin"></i> Conectando a la base de datos...
+    </div>
+
+    <script>
+      // Variables globales
+      let supabaseClient;
+      let maquinasBase = [];
+      let productosBase = [];
+      let currentPeriod = 'month';
+      let charts = {};
+
+      // Función para inicializar Supabase
+      async function inicializarSupabase() {
+        const connectionStatus = document.getElementById('connection-status');
+        connectionStatus.style.display = 'block';
+
+        try {
+          // Configuración de Supabase - Reemplaza con tus credenciales
+          const supabaseUrl = 'https://cswjdvjlfztewtmkrxsh.supabase.co';
+          const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNzd2pkdmpsZnp0ZXd0bWtyeHNoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE2NDg0ODEsImV4cCI6MjA2NzIyNDQ4MX0.z0C2PtfkvYwIYfFjnFmdRicn_Jfqyq_SbCHKycHBX-4';
+
+          supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+
+          // Verificar conexión obteniendo datos necesarios
+          const [maquinas, productos] = await Promise.all([
+            obtenerMaquinas(),
+            obtenerProductosCatalogo()
+          ]);
+
+          connectionStatus.className = 'connection-status connection-success';
+          connectionStatus.innerHTML = '<i class="fas fa-check-circle"></i> Conectado a la base de datos';
+
+          setTimeout(() => {
+            connectionStatus.style.display = 'none';
+          }, 3000);
+
+          // Actualizar lista de patentes
+          if (maquinas && maquinas.length > 0) {
+            maquinasBase = maquinas;
+            const selectPatente = document.getElementById('patente-filtro');
+            maquinas.forEach(maquina => {
+              const option = document.createElement('option');
+              option.value = maquina.patente;
+              option.textContent = maquina.patente;
+              selectPatente.appendChild(option);
+            });
+          }
+
+          // Actualizar lista de productos
+          if (productos && productos.length > 0) {
+            productosBase = productos;
+          }
+
+          // Cargar datos iniciales
+          await cargarDatos();
+
+          return true;
+        } catch (error) {
+          console.error('Error al conectar con Supabase:', error);
+          connectionStatus.className = 'connection-status connection-error';
+          connectionStatus.innerHTML = `<i class="fas fa-exclamation-circle"></i> Error: ${error.message}`;
+          mostrarError(`Error al conectar con la base de datos: ${error.message}`);
+          return false;
+        }
+      }
+
+      // Función para obtener máquinas
+      async function obtenerMaquinas() {
+        const { data, error } = await supabaseClient
+          .from('maquinas')
+          .select('patente')
+          .order('patente', { ascending: true });
+
+        if (error) throw error;
+        return data;
+      }
+
+      // Función para obtener productos del catálogo
+      async function obtenerProductosCatalogo() {
+        const { data, error } = await supabaseClient
+          .from('productos')
+          .select('id, codigo, nombre_producto')
+          .order('id', { ascending: true });
+
+        if (error) throw error;
+        return data;
+      }
+
+      // Función para obtener datos de repuestos por máquina
+      async function obtenerRepuestosPorMaquina(filtros = {}) {
+        let query = supabaseClient
+          .from('registros')
+          .select('*')
+          .eq('estado', 'salida')
+          .order('fecha', { ascending: false });
+
+        // Aplicar filtros
+        if (filtros.fechaInicio) {
+          query = query.gte('fecha', filtros.fechaInicio);
+        }
+        
+        if (filtros.fechaFin) {
+          query = query.lte('fecha', filtros.fechaFin);
+        }
+        
+        if (filtros.patente) {
+          query = query.eq('patente', filtros.patente);
+        }
+
+        const { data, error } = await query;
+
+        if (error) throw error;
+        return data;
+      }
+
+      // Función para cargar datos según los filtros
+      async function cargarDatos() {
+        try {
+          // Obtener valores de filtros
+          const fechaInicio = document.getElementById('fecha-inicio').value;
+          const fechaFin = document.getElementById('fecha-fin').value;
+          const patente = document.getElementById('patente-filtro').value;
+
+          const filtros = {
+            fechaInicio,
+            fechaFin,
+            patente
+          };
+
+          // Obtener datos
+          const datos = await obtenerRepuestosPorMaquina(filtros);
+
+          // Actualizar estadísticas
+          actualizarEstadisticas(datos);
+
+          // Actualizar tabla de detalle
+          actualizarTablaDetalle(datos);
+
+          // Actualizar gráficos
+          actualizarGraficos(datos);
+
+        } catch (error) {
+          console.error('Error al cargar datos:', error);
+          mostrarError('Error al cargar datos: ' + error.message);
+        }
+      }
+
+      // Función para actualizar estadísticas
+      function actualizarEstadisticas(datos) {
+        const statsContainer = document.getElementById('stats-container');
+        
+        // Calcular estadísticas
+        const totalRepuestos = datos.length;
+        const totalUnidades = datos.reduce((sum, item) => sum + (item.unidades || 0), 0);
+        const totalValor = datos.reduce((sum, item) => sum + (item.precio_total || 0), 0);
+        const maquinasUnicas = [...new Set(datos.map(item => item.patente))].length;
+        const productosUnicos = [...new Set(datos.map(item => item.codigo))].length;
+
+        // Crear HTML de estadísticas
+        statsContainer.innerHTML = `
+          <div class="stat-card">
+            <div class="stat-value">${totalRepuestos}</div>
+            <div class="stat-label">Total Repuestos</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">${totalUnidades}</div>
+            <div class="stat-label">Total Unidades</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">$${totalValor.toLocaleString('es-CL')}</div>
+            <div class="stat-label">Valor Total</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">${maquinasUnicas}</div>
+            <div class="stat-label">Máquinas</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">${productosUnicos}</div>
+            <div class="stat-label">Productos Diferentes</div>
+          </div>
+        `;
+      }
+
+      // Función para actualizar tabla de detalle
+      function actualizarTablaDetalle(datos) {
+        const tbody = document.getElementById('tabla-detalle').getElementsByTagName('tbody')[0];
+        tbody.innerHTML = '';
+
+        if (datos.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="7" style="text-align: center;">No se encontraron datos</td></tr>';
+          return;
+        }
+
+        datos.forEach(item => {
+          const row = tbody.insertRow();
+          
+          // Patente
+          const patenteCell = row.insertCell(0);
+          patenteCell.textContent = item.patente || '-';
+          
+          // Producto
+          const productoCell = row.insertCell(1);
+          productoCell.textContent = item.nombre || '-';
+          
+          // Código
+          const codigoCell = row.insertCell(2);
+          codigoCell.textContent = item.codigo || '-';
+          
+          // Unidades
+          const unidadesCell = row.insertCell(3);
+          unidadesCell.textContent = item.unidades || '0';
+          
+          // Total
+          const totalCell = row.insertCell(4);
+          totalCell.textContent = '$' + (item.precio_total || 0).toLocaleString('es-CL');
+          
+          // Fecha
+          const fechaCell = row.insertCell(5);
+          fechaCell.textContent = item.fecha || '-';
+          
+          // Concepto
+          const conceptoCell = row.insertCell(6);
+          conceptoCell.textContent = item.concepto || '-';
+        });
+      }
+
+      // Función para actualizar gráficos
+      function actualizarGraficos(datos) {
+        // Preparar datos para gráficos
+        const datosGraficoRepuestos = prepararDatosRepuestosMasUsados(datos);
+        const datosGraficoMaquinas = prepararDatosRepuestosPorMaquina(datos);
+        const datosGraficoEvolucion = prepararDatosEvolucionMensual(datos);
+        const datosGraficoConcepto = prepararDatosDistribucionConcepto(datos);
+
+        // Crear o actualizar gráficos
+        crearGraficoRepuestosMasUsados(datosGraficoRepuestos);
+        crearGraficoRepuestosPorMaquina(datosGraficoMaquinas);
+        crearGraficoEvolucionMensual(datosGraficoEvolucion);
+        crearGraficoDistribucionConcepto(datosGraficoConcepto);
+      }
+
+      // Preparar datos para gráfico de repuestos más usados
+      function prepararDatosRepuestosMasUsados(datos) {
+        const productosAgrupados = {};
+        
+        datos.forEach(item => {
+          const clave = `${item.codigo} - ${item.nombre}`;
+          if (!productosAgrupados[clave]) {
+            productosAgrupados[clave] = {
+              unidades: 0,
+              valor: 0
+            };
+          }
+          productosAgrupados[clave].unidades += item.unidades || 0;
+          productosAgrupados[clave].valor += item.precio_total || 0;
+        });
+
+        // Ordenar por unidades (descendente) y tomar los 10 primeros
+        const productosOrdenados = Object.entries(productosAgrupados)
+          .sort((a, b) => b[1].unidades - a[1].unidades)
+          .slice(0, 10);
+
+        return {
+          labels: productosOrdenados.map(item => item[0]),
+          datos: productosOrdenados.map(item => item[1].unidades),
+          valores: productosOrdenados.map(item => item[1].valor)
+        };
+      }
+
+      // Preparar datos para gráfico de repuestos por máquina
+      function prepararDatosRepuestosPorMaquina(datos) {
+        const maquinasAgrupadas = {};
+        
+        datos.forEach(item => {
+          const patente = item.patente || 'Sin patente';
+          if (!maquinasAgrupadas[patente]) {
+            maquinasAgrupadas[patente] = {
+              unidades: 0,
+              valor: 0
+            };
+          }
+          maquinasAgrupadas[patente].unidades += item.unidades || 0;
+          maquinasAgrupadas[patente].valor += item.precio_total || 0;
+        });
+
+        return {
+          labels: Object.keys(maquinasAgrupadas),
+          datos: Object.values(maquinasAgrupadas).map(item => item.unidades),
+          valores: Object.values(maquinasAgrupadas).map(item => item.valor)
+        };
+      }
+
+      // Preparar datos para gráfico de evolución mensual
+      function prepararDatosEvolucionMensual(datos) {
+        const mesesAgrupados = {};
+        
+        datos.forEach(item => {
+          if (item.fecha) {
+            const fecha = new Date(item.fecha);
+            const mesAnio = `${fecha.getMonth() + 1}/${fecha.getFullYear()}`;
+            
+            if (!mesesAgrupados[mesAnio]) {
+              mesesAgrupados[mesAnio] = {
+                unidades: 0,
+                valor: 0
+              };
+            }
+            mesesAgrupados[mesAnio].unidades += item.unidades || 0;
+            mesesAgrupados[mesAnio].valor += item.precio_total || 0;
+          }
+        });
+
+        // Ordenar por fecha
+        const mesesOrdenados = Object.entries(mesesAgrupados)
+          .sort((a, b) => {
+            const [mesA, anioA] = a[0].split('/').map(Number);
+            const [mesB, anioB] = b[0].split('/').map(Number);
+            return new Date(anioA, mesA - 1) - new Date(anioB, mesB - 1);
+          });
+
+        return {
+          labels: mesesOrdenados.map(item => item[0]),
+          datos: mesesOrdenados.map(item => item[1].unidades),
+          valores: mesesOrdenados.map(item => item[1].valor)
+        };
+      }
+
+      // Preparar datos para gráfico de distribución por concepto
+      function prepararDatosDistribucionConcepto(datos) {
+        const conceptosAgrupados = {};
+        
+        datos.forEach(item => {
+          const concepto = item.concepto || 'Sin concepto';
+          if (!conceptosAgrupados[concepto]) {
+            conceptosAgrupados[concepto] = {
+              unidades: 0,
+              valor: 0
+            };
+          }
+          conceptosAgrupados[concepto].unidades += item.unidades || 0;
+          conceptosAgrupados[concepto].valor += item.precio_total || 0;
+        });
+
+        return {
+          labels: Object.keys(conceptosAgrupados),
+          datos: Object.values(conceptosAgrupados).map(item => item.unidades),
+          valores: Object.values(conceptosAgrupados).map(item => item.valor)
+        };
+      }
+
+      // Crear gráfico de repuestos más usados
+      function crearGraficoRepuestosMasUsados(datos) {
+        const ctx = document.getElementById('chart-repuestos-mas-usados').getContext('2d');
+        
+        // Destruir gráfico anterior si existe
+        if (charts.repuestosMasUsados) {
+          charts.repuestosMasUsados.destroy();
+        }
+        
+        charts.repuestosMasUsados = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: datos.labels,
+            datasets: [{
+              label: 'Unidades',
+              data: datos.datos,
+              backgroundColor: 'rgba(63, 114, 175, 0.7)',
+              borderColor: 'rgba(63, 114, 175, 1)',
+              borderWidth: 1
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              y: {
+                beginAtZero: true,
+                title: {
+                  display: true,
+                  text: 'Unidades'
+                }
+              },
+              x: {
+                ticks: {
+                  maxRotation: 45,
+                  minRotation: 45
+                }
+              }
+            },
+            plugins: {
+              legend: {
+                display: false
+              },
+              tooltip: {
+                callbacks: {
+                  afterLabel: function(context) {
+                    const index = context.dataIndex;
+                    const valor = datos.valores[index];
+                    return `Valor: $${valor.toLocaleString('es-CL')}`;
+                  }
+                }
+              }
+            }
+          }
+        });
+      }
+
+      // Crear gráfico de repuestos por máquina
+      function crearGraficoRepuestosPorMaquina(datos) {
+        const ctx = document.getElementById('chart-repuestos-por-maquina').getContext('2d');
+        
+        // Destruir gráfico anterior si existe
+        if (charts.repuestosPorMaquina) {
+          charts.repuestosPorMaquina.destroy();
+        }
+        
+        charts.repuestosPorMaquina = new Chart(ctx, {
+          type: 'doughnut',
+          data: {
+            labels: datos.labels,
+            datasets: [{
+              data: datos.datos,
+              backgroundColor: [
+                'rgba(63, 114, 175, 0.7)',
+                'rgba(219, 226, 239, 0.7)',
+                'rgba(44, 82, 130, 0.7)',
+                'rgba(17, 45, 78, 0.7)',
+                'rgba(46, 204, 113, 0.7)',
+                'rgba(231, 76, 60, 0.7)',
+                'rgba(243, 156, 18, 0.7)',
+                'rgba(155, 89, 182, 0.7)',
+                'rgba(52, 152, 219, 0.7)',
+                'rgba(26, 188, 156, 0.7)'
+              ],
+              borderColor: [
+                'rgba(63, 114, 175, 1)',
+                'rgba(219, 226, 239, 1)',
+                'rgba(44, 82, 130, 1)',
+                'rgba(17, 45, 78, 1)',
+                'rgba(46, 204, 113, 1)',
+                'rgba(231, 76, 60, 1)',
+                'rgba(243, 156, 18, 1)',
+                'rgba(155, 89, 182, 1)',
+                'rgba(52, 152, 219, 1)',
+                'rgba(26, 188, 156, 1)'
+              ],
+              borderWidth: 1
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: 'right',
+              },
+              tooltip: {
+                callbacks: {
+                  afterLabel: function(context) {
+                    const index = context.dataIndex;
+                    const valor = datos.valores[index];
+                    return `Valor: $${valor.toLocaleString('es-CL')}`;
+                  }
+                }
+              }
+            }
+          }
+        });
+      }
+
+      // Crear gráfico de evolución mensual
+      function crearGraficoEvolucionMensual(datos) {
+        const ctx = document.getElementById('chart-evolucion-mensual').getContext('2d');
+        
+        // Destruir gráfico anterior si existe
+        if (charts.evolucionMensual) {
+          charts.evolucionMensual.destroy();
+        }
+        
+        charts.evolucionMensual = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: datos.labels,
+            datasets: [
+              {
+                label: 'Unidades',
+                data: datos.datos,
+                borderColor: 'rgba(63, 114, 175, 1)',
+                backgroundColor: 'rgba(63, 114, 175, 0.1)',
+                borderWidth: 2,
+                tension: 0.3,
+                yAxisID: 'y'
+              },
+              {
+                label: 'Valor ($)',
+                data: datos.valores,
+                borderColor: 'rgba(231, 76, 60, 1)',
+                backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                borderWidth: 2,
+                tension: 0.3,
+                yAxisID: 'y1'
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              y: {
+                type: 'linear',
+                display: true,
+                position: 'left',
+                title: {
+                  display: true,
+                  text: 'Unidades'
+                }
+              },
+              y1: {
+                type: 'linear',
+                display: true,
+                position: 'right',
+                title: {
+                  display: true,
+                  text: 'Valor ($)'
+                },
+                grid: {
+                  drawOnChartArea: false,
+                },
+              }
+            }
+          }
+        });
+      }
+
+      // Crear gráfico de distribución por concepto
+      function crearGraficoDistribucionConcepto(datos) {
+        const ctx = document.getElementById('chart-distribucion-concepto').getContext('2d');
+        
+        // Destruir gráfico anterior si existe
+        if (charts.distribucionConcepto) {
+          charts.distribucionConcepto.destroy();
+        }
+        
+        charts.distribucionConcepto = new Chart(ctx, {
+          type: 'pie',
+          data: {
+            labels: datos.labels,
+            datasets: [{
+              data: datos.datos,
+              backgroundColor: [
+                'rgba(63, 114, 175, 0.7)',
+                'rgba(219, 226, 239, 0.7)',
+                'rgba(44, 82, 130, 0.7)',
+                'rgba(17, 45, 78, 0.7)',
+                'rgba(46, 204, 113, 0.7)',
+                'rgba(231, 76, 60, 0.7)'
+              ],
+              borderColor: [
+                'rgba(63, 114, 175, 1)',
+                'rgba(219, 226, 239, 1)',
+                'rgba(44, 82, 130, 1)',
+                'rgba(17, 45, 78, 1)',
+                'rgba(46, 204, 113, 1)',
+                'rgba(231, 76, 60, 1)'
+              ],
+              borderWidth: 1
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: 'right',
+              },
+              tooltip: {
+                callbacks: {
+                  afterLabel: function(context) {
+                    const index = context.dataIndex;
+                    const valor = datos.valores[index];
+                    return `Valor: $${valor.toLocaleString('es-CL')}`;
+                  }
+                }
+              }
+            }
+          }
+        });
+      }
+
+      // Función para limpiar filtros
+      function limpiarFiltros() {
+        document.getElementById('fecha-inicio').value = '';
+        document.getElementById('fecha-fin').value = '';
+        document.getElementById('patente-filtro').value = '';
+        
+        // Restablecer período a mes
+        document.querySelectorAll('.period-btn').forEach(btn => {
+          btn.classList.remove('active');
+        });
+        document.querySelector('.period-btn[data-period="month"]').classList.add('active');
+        currentPeriod = 'month';
+        
+        // Cargar datos sin filtros
+        cargarDatos();
+      }
+
+      // Mostrar mensaje de error
+      function mostrarError(mensaje) {
+        const errorElement = document.getElementById('error-message');
+        errorElement.textContent = mensaje;
+        errorElement.style.display = 'block';
+
+        setTimeout(() => {
+          errorElement.style.display = 'none';
+        }, 5000);
+      }
+
+      // Mostrar mensaje de éxito
+      function mostrarExito(mensaje) {
+        const successElement = document.getElementById('success-message');
+        successElement.textContent = mensaje;
+        successElement.style.display = 'block';
+
+        setTimeout(() => {
+          successElement.style.display = 'none';
+        }, 3000);
+      }
+
+      // Inicializar la aplicación cuando se cargue la página
+      document.addEventListener('DOMContentLoaded', async function() {
+        // Configurar fecha por defecto (último mes)
+        const fechaFin = new Date();
+        const fechaInicio = new Date();
+        fechaInicio.setMonth(fechaInicio.getMonth() - 1);
+        
+        document.getElementById('fecha-inicio').value = fechaInicio.toISOString().split('T')[0];
+        document.getElementById('fecha-fin').value = fechaFin.toISOString().split('T')[0];
+        
+        // Configurar eventos para botones de período
+        document.querySelectorAll('.period-btn').forEach(btn => {
+          btn.addEventListener('click', function() {
+            document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            currentPeriod = this.dataset.period;
+            
+            // Actualizar fechas según el período seleccionado
+            const fechaFin = new Date();
+            const fechaInicio = new Date();
+            
+            switch(currentPeriod) {
+              case 'day':
+                fechaInicio.setDate(fechaFin.getDate() - 1);
+                break;
+              case 'week':
+                fechaInicio.setDate(fechaFin.getDate() - 7);
+                break;
+              case 'month':
+                fechaInicio.setMonth(fechaFin.getMonth() - 1);
+                break;
+              case 'bimester':
+                fechaInicio.setMonth(fechaFin.getMonth() - 2);
+                break;
+              case 'trimester':
+                fechaInicio.setMonth(fechaFin.getMonth() - 3);
+                break;
+              case 'quarter':
+                fechaInicio.setMonth(fechaFin.getMonth() - 4);
+                break;
+              case 'semester':
+                fechaInicio.setMonth(fechaFin.getMonth() - 6);
+                break;
+              case 'year':
+                fechaInicio.setFullYear(fechaFin.getFullYear() - 1);
+                break;
+            }
+            
+            document.getElementById('fecha-inicio').value = fechaInicio.toISOString().split('T')[0];
+            document.getElementById('fecha-fin').value = fechaFin.toISOString().split('T')[0];
+            
+            // Cargar datos con el nuevo período
+            cargarDatos();
+          });
+        });
+
+        await inicializarSupabase();
+      });
+    </script>
+  </div>
+</body>
+</html>
