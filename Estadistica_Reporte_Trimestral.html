@@ -1008,30 +1008,57 @@
         return !isNaN(fecha.getTime());
       }
 
-      // Función para obtener rango de fechas del trimestre
+      // Función para obtener rango de fechas del trimestre (CORREGIDA)
       function obtenerRangoTrimestre(trimestre, anio) {
+        // Validar que los parámetros sean números válidos
+        const trimestreNum = parseInt(trimestre);
+        const anioNum = parseInt(anio);
+        
+        if (isNaN(trimestreNum) || isNaN(anioNum)) {
+          console.error('Parámetros inválidos:', { trimestre, anio });
+          // Usar valores por defecto seguros
+          const fechaInicio = new Date(new Date().getFullYear(), 0, 1);
+          const fechaFin = new Date(new Date().getFullYear(), 2, 31);
+          
+          return {
+            inicio: fechaInicio.toISOString().split('T')[0],
+            fin: fechaFin.toISOString().split('T')[0]
+          };
+        }
+
+        // Asegurar que el trimestre esté entre 1 y 4
+        const trimestreValido = Math.max(1, Math.min(4, trimestreNum));
+        
         let fechaInicio, fechaFin;
 
-        switch(parseInt(trimestre)) {
+        switch(trimestreValido) {
           case 1:
-            fechaInicio = new Date(anio, 0, 1); // 1 de enero
-            fechaFin = new Date(anio, 2, 31); // 31 de marzo
+            fechaInicio = new Date(anioNum, 0, 1); // 1 de enero
+            fechaFin = new Date(anioNum, 2, 31); // 31 de marzo
             break;
           case 2:
-            fechaInicio = new Date(anio, 3, 1); // 1 de abril
-            fechaFin = new Date(anio, 5, 30); // 30 de junio
+            fechaInicio = new Date(anioNum, 3, 1); // 1 de abril
+            fechaFin = new Date(anioNum, 5, 30); // 30 de junio
             break;
           case 3:
-            fechaInicio = new Date(anio, 6, 1); // 1 de julio
-            fechaFin = new Date(anio, 8, 30); // 30 de septiembre
+            fechaInicio = new Date(anioNum, 6, 1); // 1 de julio
+            fechaFin = new Date(anioNum, 8, 30); // 30 de septiembre
             break;
           case 4:
-            fechaInicio = new Date(anio, 9, 1); // 1 de octubre
-            fechaFin = new Date(anio, 11, 31); // 31 de diciembre
+            fechaInicio = new Date(anioNum, 9, 1); // 1 de octubre
+            fechaFin = new Date(anioNum, 11, 31); // 31 de diciembre
             break;
           default:
-            fechaInicio = new Date(anio, 0, 1);
-            fechaFin = new Date(anio, 2, 31);
+            fechaInicio = new Date(anioNum, 0, 1);
+            fechaFin = new Date(anioNum, 2, 31);
+        }
+
+        // Validar que las fechas sean válidas
+        if (isNaN(fechaInicio.getTime()) || isNaN(fechaFin.getTime())) {
+          console.error('Fechas inválidas generadas:', { fechaInicio, fechaFin });
+          // Usar valores por defecto
+          fechaInicio = new Date(new Date().getFullYear(), 0, 1);
+          fechaFin = new Date(new Date().getFullYear(), 2, 31);
         }
 
         return {
@@ -1043,7 +1070,14 @@
       // Función para obtener datos trimestrales
       async function obtenerDatosTrimestrales(trimestre, anio, patente = '') {
         try {
+          // Validar parámetros antes de continuar
+          if (isNaN(parseInt(trimestre)) || isNaN(parseInt(anio))) {
+            console.error('Parámetros inválidos para obtener datos:', { trimestre, anio });
+            return [];
+          }
+          
           const rango = obtenerRangoTrimestre(trimestre, anio);
+          console.log('Consultando datos para:', { trimestre, anio, rango, patente });
 
           let query = supabaseClient
             .from('registros')
@@ -1059,25 +1093,51 @@
 
           const { data, error } = await query;
 
-          if (error) throw error;
+          if (error) {
+            console.error('Error en consulta Supabase:', error);
+            throw error;
+          }
+          
+          console.log(`Datos obtenidos: ${data ? data.length : 0} registros`);
           
           // Filtrar registros con fechas inválidas
-          return data.filter(item => esFechaValida(item.fecha));
+          return data ? data.filter(item => esFechaValida(item.fecha)) : [];
         } catch (error) {
           console.error('Error en obtenerDatosTrimestrales:', error);
-          throw error;
+          mostrarError(`Error al obtener datos: ${error.message}`);
+          return [];
         }
       }
 
       // Función para cargar datos trimestrales
       async function cargarDatosTrimestrales() {
         try {
+          // Mostrar indicador de carga
+          mostrarInfo('Cargando datos...');
+
           // Obtener valores de filtros
-          currentAnio = parseInt(document.getElementById('anio-select').value);
+          const anioSelect = document.getElementById('anio-select');
+          const anioValue = anioSelect.value;
+          
+          // Validar año seleccionado
+          if (!anioValue || isNaN(parseInt(anioValue))) {
+            currentAnio = new Date().getFullYear();
+            anioSelect.value = currentAnio;
+          } else {
+            currentAnio = parseInt(anioValue);
+          }
+          
           const patente = document.getElementById('patente-filtro').value;
+
+          console.log('Cargando datos para:', {
+            trimestre: currentTrimestre,
+            anio: currentAnio,
+            patente: patente || 'Todas'
+          });
 
           // Obtener datos del trimestre actual
           datosTrimestreActual = await obtenerDatosTrimestrales(currentTrimestre, currentAnio, patente);
+          console.log('Datos trimestre actual:', datosTrimestreActual?.length);
 
           // Obtener datos del trimestre anterior para comparación
           let trimestreAnterior = currentTrimestre - 1;
@@ -1089,13 +1149,24 @@
           }
           
           datosTrimestreAnterior = await obtenerDatosTrimestrales(trimestreAnterior, anioAnterior, patente);
+          console.log('Datos trimestre anterior:', datosTrimestreAnterior?.length);
+
+          // Ocultar indicador de carga
+          document.getElementById('success-message').classList.add('hidden');
 
           // Actualizar interfaz
           actualizarVistaInforme();
 
+          // Mostrar mensaje de éxito si hay datos
+          if (datosTrimestreActual && datosTrimestreActual.length > 0) {
+            mostrarExito(`Se cargaron ${datosTrimestreActual.length} registros del trimestre`);
+          } else {
+            mostrarInfo('No se encontraron registros para el trimestre seleccionado');
+          }
+
         } catch (error) {
           console.error('Error al cargar datos trimestrales:', error);
-          // No mostrar error automáticamente
+          mostrarError(`Error: ${error.message}`);
         }
       }
 
@@ -1482,6 +1553,16 @@
           charts.distribucionConcepto.destroy();
         }
         
+        // Si no hay datos, mostrar mensaje
+        if (!datos || datos.datos.length === 0) {
+          ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+          ctx.font = '16px Arial';
+          ctx.fillStyle = '#666';
+          ctx.textAlign = 'center';
+          ctx.fillText('No hay datos para mostrar', ctx.canvas.width/2, ctx.canvas.height/2);
+          return;
+        }
+        
         charts.distribucionConcepto = new Chart(ctx, {
           type: 'doughnut',
           data: {
@@ -1493,14 +1574,24 @@
                 'rgba(219, 226, 239, 0.7)',
                 'rgba(44, 82, 130, 0.7)',
                 'rgba(17, 45, 78, 0.7)',
-                'rgba(46, 204, 113, 0.7)'
+                'rgba(46, 204, 113, 0.7)',
+                'rgba(231, 76, 60, 0.7)',
+                'rgba(243, 156, 18, 0.7)',
+                'rgba(155, 89, 182, 0.7)',
+                'rgba(26, 188, 156, 0.7)',
+                'rgba(52, 152, 219, 0.7)'
               ],
               borderColor: [
                 'rgba(63, 114, 175, 1)',
                 'rgba(219, 226, 239, 1)',
                 'rgba(44, 82, 130, 1)',
                 'rgba(17, 45, 78, 1)',
-                'rgba(46, 204, 113, 1)'
+                'rgba(46, 204, 113, 1)',
+                'rgba(231, 76, 60, 1)',
+                'rgba(243, 156, 18, 1)',
+                'rgba(155, 89, 182, 1)',
+                'rgba(26, 188, 156, 1)',
+                'rgba(52, 152, 219, 1)'
               ],
               borderWidth: 1
             }]
@@ -1533,6 +1624,16 @@
         // Destruir gráfico anterior si existe
         if (charts.topRepuestos) {
           charts.topRepuestos.destroy();
+        }
+        
+        // Si no hay datos, mostrar mensaje
+        if (!datos || datos.datos.length === 0) {
+          ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+          ctx.font = '16px Arial';
+          ctx.fillStyle = '#666';
+          ctx.textAlign = 'center';
+          ctx.fillText('No hay datos para mostrar', ctx.canvas.width/2, ctx.canvas.height/2);
+          return;
         }
         
         charts.topRepuestos = new Chart(ctx, {
@@ -1587,6 +1688,16 @@
         // Destruir gráfico anterior si existe
         if (charts.evolucionMensual) {
           charts.evolucionMensual.destroy();
+        }
+        
+        // Si no hay datos, mostrar mensaje
+        if (!datos || datos.datos.length === 0) {
+          ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+          ctx.font = '16px Arial';
+          ctx.fillStyle = '#666';
+          ctx.textAlign = 'center';
+          ctx.fillText('No hay datos para mostrar', ctx.canvas.width/2, ctx.canvas.height/2);
+          return;
         }
         
         charts.evolucionMensual = new Chart(ctx, {
@@ -1651,6 +1762,16 @@
         // Destruir gráfico anterior si existe
         if (charts.repuestosMaquina) {
           charts.repuestosMaquina.destroy();
+        }
+        
+        // Si no hay datos, mostrar mensaje
+        if (!datos || datos.datos.length === 0) {
+          ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+          ctx.font = '16px Arial';
+          ctx.fillStyle = '#666';
+          ctx.textAlign = 'center';
+          ctx.fillText('No hay datos para mostrar', ctx.canvas.width/2, ctx.canvas.height/2);
+          return;
         }
         
         charts.repuestosMaquina = new Chart(ctx, {
@@ -1772,6 +1893,14 @@
         }, 3000);
       }
 
+      // Mostrar mensaje de información
+      function mostrarInfo(mensaje) {
+        const infoElement = document.getElementById('success-message');
+        infoElement.className = 'status-message info';
+        infoElement.textContent = mensaje;
+        infoElement.classList.remove('hidden');
+      }
+
       // Inicializar la aplicación cuando se cargue la página
       document.addEventListener('DOMContentLoaded', async function() {
         // Configurar eventos para botones de trimestre
@@ -1780,17 +1909,18 @@
             document.querySelectorAll('.trimestre-btn').forEach(b => b.classList.remove('active'));
             this.classList.add('active');
             currentTrimestre = parseInt(this.dataset.trimestre);
+            cargarDatosTrimestrales();
           });
         });
 
         // Configurar evento para cambio de año
         document.getElementById('anio-select').addEventListener('change', function() {
-          // Solo actualizar si no estamos en medio de otra operación
+          cargarDatosTrimestrales();
         });
 
         // Configurar evento para cambio de patente
         document.getElementById('patente-filtro').addEventListener('change', function() {
-          // Solo actualizar si no estamos en medio de otra operación
+          cargarDatosTrimestrales();
         });
 
         await inicializarSupabase();
