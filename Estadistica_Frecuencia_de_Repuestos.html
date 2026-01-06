@@ -368,29 +368,46 @@
       min-width: 200px;
     }
 
-    .period-buttons {
+    /* Estilos para selector de períodos */
+    .periodo-selector-container {
+      margin-bottom: 20px;
+    }
+
+    .periodo-selector-label {
+      display: block;
+      margin-bottom: 10px;
+      font-weight: 600;
+      color: var(--color-primary);
+    }
+
+    .periodo-selector {
       display: flex;
       flex-wrap: wrap;
       gap: 10px;
-      margin-top: 10px;
     }
 
-    .period-btn {
-      padding: 8px 15px;
+    .periodo-btn {
+      padding: 10px 20px;
       border: 1px solid var(--color-primary);
       background-color: white;
       color: var(--color-primary);
       border-radius: var(--border-radius);
       cursor: pointer;
       transition: all 0.3s;
+      font-weight: 600;
+      text-align: center;
+      flex: 1;
+      min-width: 120px;
+      max-width: 150px;
     }
 
-    .period-btn.active {
+    .periodo-btn.active {
       background-color: var(--color-primary);
       color: white;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     }
 
-    .period-btn:hover {
+    .periodo-btn:hover:not(.active) {
       background-color: var(--color-secondary);
     }
 
@@ -414,6 +431,7 @@
       font-size: 1.8rem;
       font-weight: bold;
       color: var(--color-primary);
+      margin-bottom: 5px;
     }
 
     .stat-label {
@@ -486,6 +504,80 @@
       color: #666;
     }
 
+    /* Estilos para modal de selección de datos */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-content {
+      background-color: white;
+      padding: 30px;
+      border-radius: var(--border-radius);
+      box-shadow: var(--box-shadow);
+      width: 90%;
+      max-width: 600px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #ddd;
+    }
+
+    .modal-title {
+      color: var(--color-primary);
+      margin: 0;
+    }
+
+    .close-modal {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: #666;
+    }
+
+    .close-modal:hover {
+      color: var(--color-error);
+    }
+
+    .data-selection-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .data-selection-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .data-selection-item input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+    }
+
+    .data-selection-item label {
+      font-weight: normal;
+      margin-bottom: 0;
+    }
+
     @media print {
       body {
         background: white;
@@ -517,6 +609,14 @@
       .subtitle {
         color: #555 !important;
       }
+
+      .ranking-container {
+        flex-direction: column;
+      }
+      
+      .ranking-card {
+        min-width: 100%;
+      }
     }
 
     @media (max-width: 768px) {
@@ -547,6 +647,18 @@
       .ranking-card {
         min-width: 100%;
       }
+      
+      .periodo-selector {
+        flex-direction: column;
+      }
+      
+      .periodo-btn {
+        max-width: 100%;
+      }
+      
+      .data-selection-grid {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
@@ -576,13 +688,34 @@
     <div id="success-message" class="status-message success" style="display: none;"></div>
 
     <div class="filters-container">
-      <h3>Filtros de Consulta</h3>
+      <h3>Configuración del Informe</h3>
+      
+      <!-- Selector de períodos como etiquetas -->
+      <div class="periodo-selector-container">
+        <label class="periodo-selector-label">Seleccione el período:</label>
+        <div class="periodo-selector">
+          <div class="periodo-btn active" data-periodo="dia">Día</div>
+          <div class="periodo-btn" data-periodo="semana">Semana</div>
+          <div class="periodo-btn" data-periodo="mes">Mes</div>
+          <div class="periodo-btn" data-periodo="bimestre">Bimestre</div>
+          <div class="periodo-btn" data-periodo="trimestre">Trimestre</div>
+          <div class="periodo-btn" data-periodo="cuatrimestre">Cuatrimestre</div>
+          <div class="periodo-btn" data-periodo="semestre">Semestre</div>
+          <div class="periodo-btn" data-periodo="anio">Año</div>
+          <div class="periodo-btn" data-periodo="personalizado">Personalizado</div>
+        </div>
+      </div>
+      
       <div class="filter-row">
-        <div class="filter-group">
+        <div class="filter-group" id="fecha-personalizada-group" style="display: none;">
+          <label for="fecha-personalizada">Fecha:</label>
+          <input type="date" id="fecha-personalizada">
+        </div>
+        <div class="filter-group" id="fecha-inicio-group" style="display: none;">
           <label for="fecha-inicio">Fecha de Inicio:</label>
           <input type="date" id="fecha-inicio">
         </div>
-        <div class="filter-group">
+        <div class="filter-group" id="fecha-fin-group" style="display: none;">
           <label for="fecha-fin">Fecha de Fin:</label>
           <input type="date" id="fecha-fin">
         </div>
@@ -596,17 +729,21 @@
       
       <div class="filter-row">
         <div class="filter-group">
-          <label>Período de Tiempo:</label>
-          <div class="period-buttons">
-            <button class="period-btn active" data-period="day">Día</button>
-            <button class="period-btn" data-period="week">Semana</button>
-            <button class="period-btn" data-period="month">Mes</button>
-            <button class="period-btn" data-period="bimester">Bimestre</button>
-            <button class="period-btn" data-period="trimester">Trimestre</button>
-            <button class="period-btn" data-period="quarter">Cuatrimestre</button>
-            <button class="period-btn" data-period="semester">Semestre</button>
-            <button class="period-btn" data-period="year">Año</button>
-          </div>
+          <label for="mostrar-top">Mostrar:</label>
+          <select id="mostrar-top">
+            <option value="0">Todos los repuestos</option>
+            <option value="10">Top 10</option>
+            <option value="20">Top 20</option>
+            <option value="30">Top 30</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label for="ordenar-por">Ordenar por:</label>
+          <select id="ordenar-por">
+            <option value="unidades">Unidades</option>
+            <option value="valor">Valor</option>
+            <option value="frecuencia">Frecuencia</option>
+          </select>
         </div>
       </div>
       
@@ -614,9 +751,48 @@
         <button class="btn btn-secondary" onclick="limpiarFiltros()">
           <i class="fas fa-times"></i> Limpiar
         </button>
-        <button class="btn btn-primary" onclick="cargarDatos()">
-          <i class="fas fa-search"></i> Aplicar Filtros
+        <button class="btn btn-primary" onclick="mostrarModalSeleccionDatos()">
+          <i class="fas fa-file-alt"></i> Generar Informe
         </button>
+      </div>
+    </div>
+
+    <!-- Modal para selección de datos -->
+    <div id="modal-seleccion-datos" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 class="modal-title">Seleccionar Datos para el Informe</h3>
+          <button class="close-modal" onclick="cerrarModalSeleccionDatos()">&times;</button>
+        </div>
+        <p>Seleccione qué elementos desea incluir en el informe:</p>
+        
+        <div class="data-selection-grid">
+          <div class="data-selection-item">
+            <input type="checkbox" id="mostrar-estadisticas" checked>
+            <label for="mostrar-estadisticas">Estadísticas Generales</label>
+          </div>
+          <div class="data-selection-item">
+            <input type="checkbox" id="mostrar-ranking" checked>
+            <label for="mostrar-ranking">Ranking de Repuestos</label>
+          </div>
+          <div class="data-selection-item">
+            <input type="checkbox" id="mostrar-graficos" checked>
+            <label for="mostrar-graficos">Gráficos de Frecuencia</label>
+          </div>
+          <div class="data-selection-item">
+            <input type="checkbox" id="mostrar-detalle" checked>
+            <label for="mostrar-detalle">Tabla de Detalle</label>
+          </div>
+        </div>
+        
+        <div class="form-actions">
+          <button class="btn btn-secondary" onclick="cerrarModalSeleccionDatos()">
+            <i class="fas fa-times"></i> Cancelar
+          </button>
+          <button class="btn btn-success" onclick="generarInforme()">
+            <i class="fas fa-check"></i> Generar Informe
+          </button>
+        </div>
       </div>
     </div>
 
@@ -624,14 +800,14 @@
       <!-- Las estadísticas se cargarán dinámicamente -->
     </div>
 
-    <div class="resultados-container">
+    <div class="resultados-container" id="ranking-container">
       <h3>Ranking de Repuestos Más Utilizados</h3>
-      <div class="ranking-container" id="ranking-container">
+      <div class="ranking-container" id="ranking-cards-container">
         <!-- El ranking se cargará dinámicamente -->
       </div>
     </div>
 
-    <div class="resultados-container">
+    <div class="resultados-container" id="graficos-container">
       <h3>Gráficos de Frecuencia de Repuestos</h3>
       <div class="charts-container">
         <div class="chart-card">
@@ -661,7 +837,7 @@
       </div>
     </div>
 
-    <div class="resultados-container">
+    <div class="resultados-container" id="detalle-container">
       <h3>Detalle de Repuestos Utilizados</h3>
       <table class="tabla-resultados" id="tabla-detalle">
         <thead>
@@ -691,8 +867,15 @@
       let supabaseClient;
       let maquinasBase = [];
       let productosBase = [];
-      let currentPeriod = 'month';
+      let datosProcesados = null;
       let charts = {};
+      let configuracionInforme = {
+        mostrarEstadisticas: true,
+        mostrarRanking: true,
+        mostrarGraficos: true,
+        mostrarDetalle: true
+      };
+      let periodoSeleccionado = 'mes'; // Período por defecto
 
       // Función para inicializar Supabase
       async function inicializarSupabase() {
@@ -736,8 +919,17 @@
             productosBase = productos;
           }
 
+          // Configurar fechas por defecto (último mes)
+          const fechaFin = new Date();
+          const fechaInicio = new Date();
+          fechaInicio.setMonth(fechaInicio.getMonth() - 1);
+          
+          document.getElementById('fecha-personalizada').value = fechaFin.toISOString().split('T')[0];
+          document.getElementById('fecha-inicio').value = fechaInicio.toISOString().split('T')[0];
+          document.getElementById('fecha-fin').value = fechaFin.toISOString().split('T')[0];
+
           // Cargar datos iniciales
-          await cargarDatos();
+          await cargarDatosRepuestos();
 
           return true;
         } catch (error) {
@@ -772,24 +964,18 @@
       }
 
       // Función para obtener datos de repuestos por frecuencia
-      async function obtenerRepuestosPorFrecuencia(filtros = {}) {
+      async function obtenerRepuestosPorFrecuencia(fechaInicio, fechaFin, patente) {
         let query = supabaseClient
           .from('registros')
           .select('*')
           .eq('estado', 'salida')
+          .gte('fecha', fechaInicio)
+          .lte('fecha', fechaFin)
           .order('fecha', { ascending: false });
 
-        // Aplicar filtros
-        if (filtros.fechaInicio) {
-          query = query.gte('fecha', filtros.fechaInicio);
-        }
-        
-        if (filtros.fechaFin) {
-          query = query.lte('fecha', filtros.fechaFin);
-        }
-        
-        if (filtros.patente) {
-          query = query.eq('patente', filtros.patente);
+        // Aplicar filtro de patente si se seleccionó
+        if (patente) {
+          query = query.eq('patente', patente);
         }
 
         const { data, error } = await query;
@@ -798,42 +984,55 @@
         return data;
       }
 
-      // Función para cargar datos según los filtros
-      async function cargarDatos() {
-        try {
-          // Obtener valores de filtros
-          const fechaInicio = document.getElementById('fecha-inicio').value;
-          const fechaFin = document.getElementById('fecha-fin').value;
-          const patente = document.getElementById('patente-filtro').value;
-
-          const filtros = {
-            fechaInicio,
-            fechaFin,
-            patente
-          };
-
-          // Obtener datos
-          const datos = await obtenerRepuestosPorFrecuencia(filtros);
-
-          // Procesar datos para análisis de frecuencia
-          const datosProcesados = procesarDatosFrecuencia(datos);
-
-          // Actualizar estadísticas
-          actualizarEstadisticas(datosProcesados);
-
-          // Actualizar ranking
-          actualizarRanking(datosProcesados);
-
-          // Actualizar tabla de detalle
-          actualizarTablaDetalle(datosProcesados);
-
-          // Actualizar gráficos
-          actualizarGraficos(datosProcesados);
-
-        } catch (error) {
-          console.error('Error al cargar datos:', error);
-          mostrarError('Error al cargar datos: ' + error.message);
+      // Función para calcular fechas según período seleccionado
+      function calcularFechasPorPeriodo(periodo) {
+        const fechaFin = new Date();
+        let fechaInicio = new Date();
+        
+        switch(periodo) {
+          case 'dia':
+            fechaInicio.setDate(fechaFin.getDate() - 1);
+            break;
+          case 'semana':
+            fechaInicio.setDate(fechaFin.getDate() - 7);
+            break;
+          case 'mes':
+            fechaInicio.setMonth(fechaFin.getMonth() - 1);
+            break;
+          case 'bimestre':
+            fechaInicio.setMonth(fechaFin.getMonth() - 2);
+            break;
+          case 'trimestre':
+            fechaInicio.setMonth(fechaFin.getMonth() - 3);
+            break;
+          case 'cuatrimestre':
+            fechaInicio.setMonth(fechaFin.getMonth() - 4);
+            break;
+          case 'semestre':
+            fechaInicio.setMonth(fechaFin.getMonth() - 6);
+            break;
+          case 'anio':
+            fechaInicio.setFullYear(fechaFin.getFullYear() - 1);
+            break;
+          case 'personalizado':
+            // Para personalizado, usamos las fechas del formulario
+            const fechaInicioInput = document.getElementById('fecha-inicio').value;
+            const fechaFinInput = document.getElementById('fecha-fin').value;
+            
+            if (fechaInicioInput && fechaFinInput) {
+              fechaInicio = new Date(fechaInicioInput);
+              fechaFin = new Date(fechaFinInput);
+            } else {
+              // Por defecto, último mes
+              fechaInicio.setMonth(fechaFin.getMonth() - 1);
+            }
+            break;
         }
+        
+        return {
+          fechaInicio: fechaInicio.toISOString().split('T')[0],
+          fechaFin: fechaFin.toISOString().split('T')[0]
+        };
       }
 
       // Función para procesar datos de frecuencia
@@ -874,15 +1073,97 @@
           productosAgrupados[codigo].maquinas = Array.from(productosAgrupados[codigo].maquinas);
         });
 
-        // Convertir a array y ordenar por unidades (descendente)
-        return Object.values(productosAgrupados)
-          .sort((a, b) => b.unidades - a.unidades);
+        // Convertir a array
+        return Object.values(productosAgrupados);
+      }
+
+      // Función para cargar datos de repuestos
+      async function cargarDatosRepuestos() {
+        try {
+          // Obtener valores de filtros
+          const patente = document.getElementById('patente-filtro').value;
+          const mostrarTop = parseInt(document.getElementById('mostrar-top').value);
+          const ordenarPor = document.getElementById('ordenar-por').value;
+
+          // Calcular fechas según período
+          const fechas = calcularFechasPorPeriodo(periodoSeleccionado);
+
+          // Obtener datos
+          const datos = await obtenerRepuestosPorFrecuencia(
+            fechas.fechaInicio, 
+            fechas.fechaFin, 
+            patente
+          );
+
+          // Procesar datos por frecuencia
+          let datosProcesados = procesarDatosFrecuencia(datos);
+
+          // Ordenar según criterio seleccionado
+          switch(ordenarPor) {
+            case 'unidades':
+              datosProcesados.sort((a, b) => b.unidades - a.unidades);
+              break;
+            case 'valor':
+              datosProcesados.sort((a, b) => b.valor - a.valor);
+              break;
+            case 'frecuencia':
+              datosProcesados.sort((a, b) => b.frecuencia - a.frecuencia);
+              break;
+          }
+
+          // Aplicar filtro de top si es necesario
+          if (mostrarTop > 0) {
+            datosProcesados = datosProcesados.slice(0, mostrarTop);
+          }
+
+          // Actualizar interfaz según configuración
+          actualizarVistaInforme(datosProcesados);
+
+        } catch (error) {
+          console.error('Error al cargar datos de repuestos:', error);
+          mostrarError('Error al cargar datos: ' + error.message);
+        }
+      }
+
+      // Función para actualizar la vista según la configuración del informe
+      function actualizarVistaInforme(datosProcesados) {
+        // Mostrar/ocultar secciones según configuración
+        document.getElementById('stats-container').style.display = 
+          configuracionInforme.mostrarEstadisticas ? 'grid' : 'none';
+        document.getElementById('ranking-container').style.display = 
+          configuracionInforme.mostrarRanking ? 'block' : 'none';
+        document.getElementById('graficos-container').style.display = 
+          configuracionInforme.mostrarGraficos ? 'block' : 'none';
+        document.getElementById('detalle-container').style.display = 
+          configuracionInforme.mostrarDetalle ? 'block' : 'none';
+
+        // Actualizar contenido de cada sección
+        if (configuracionInforme.mostrarEstadisticas) {
+          actualizarEstadisticas(datosProcesados);
+        }
+        
+        if (configuracionInforme.mostrarRanking) {
+          actualizarRanking(datosProcesados);
+        }
+        
+        if (configuracionInforme.mostrarGraficos) {
+          actualizarGraficos(datosProcesados);
+        }
+        
+        if (configuracionInforme.mostrarDetalle) {
+          actualizarTablaDetalle(datosProcesados);
+        }
       }
 
       // Función para actualizar estadísticas
       function actualizarEstadisticas(datos) {
         const statsContainer = document.getElementById('stats-container');
         
+        if (!datos || datos.length === 0) {
+          statsContainer.innerHTML = '<p style="text-align: center; width: 100%;">No se encontraron datos</p>';
+          return;
+        }
+
         // Calcular estadísticas
         const totalRepuestos = datos.length;
         const totalUnidades = datos.reduce((sum, item) => sum + item.unidades, 0);
@@ -917,7 +1198,7 @@
 
       // Función para actualizar ranking
       function actualizarRanking(datos) {
-        const rankingContainer = document.getElementById('ranking-container');
+        const rankingContainer = document.getElementById('ranking-cards-container');
         rankingContainer.innerHTML = '';
 
         if (datos.length === 0) {
@@ -1274,21 +1555,90 @@
         });
       }
 
-      // Función para limpiar filtros
-      function limpiarFiltros() {
-        document.getElementById('fecha-inicio').value = '';
-        document.getElementById('fecha-fin').value = '';
-        document.getElementById('patente-filtro').value = '';
+      // Función para manejar la selección de período
+      function seleccionarPeriodo(periodo) {
+        // Actualizar variable global
+        periodoSeleccionado = periodo;
         
-        // Restablecer período a mes
-        document.querySelectorAll('.period-btn').forEach(btn => {
+        // Actualizar estado visual de los botones
+        document.querySelectorAll('.periodo-btn').forEach(btn => {
           btn.classList.remove('active');
         });
-        document.querySelector('.period-btn[data-period="month"]').classList.add('active');
-        currentPeriod = 'month';
+        
+        // Activar el botón seleccionado
+        document.querySelector(`.periodo-btn[data-periodo="${periodo}"]`).classList.add('active');
+        
+        // Mostrar/ocultar campos de fecha según el período
+        if (periodo === 'personalizado') {
+          document.getElementById('fecha-personalizada-group').style.display = 'none';
+          document.getElementById('fecha-inicio-group').style.display = 'block';
+          document.getElementById('fecha-fin-group').style.display = 'block';
+        } else if (periodo === 'dia') {
+          document.getElementById('fecha-personalizada-group').style.display = 'block';
+          document.getElementById('fecha-inicio-group').style.display = 'none';
+          document.getElementById('fecha-fin-group').style.display = 'none';
+        } else {
+          document.getElementById('fecha-personalizada-group').style.display = 'none';
+          document.getElementById('fecha-inicio-group').style.display = 'none';
+          document.getElementById('fecha-fin-group').style.display = 'none';
+        }
+      }
+
+      // Función para mostrar modal de selección de datos
+      function mostrarModalSeleccionDatos() {
+        document.getElementById('modal-seleccion-datos').style.display = 'flex';
+        
+        // Establecer valores actuales en los checkboxes
+        document.getElementById('mostrar-estadisticas').checked = configuracionInforme.mostrarEstadisticas;
+        document.getElementById('mostrar-ranking').checked = configuracionInforme.mostrarRanking;
+        document.getElementById('mostrar-graficos').checked = configuracionInforme.mostrarGraficos;
+        document.getElementById('mostrar-detalle').checked = configuracionInforme.mostrarDetalle;
+      }
+
+      // Función para cerrar modal de selección de datos
+      function cerrarModalSeleccionDatos() {
+        document.getElementById('modal-seleccion-datos').style.display = 'none';
+      }
+
+      // Función para generar informe con la configuración seleccionada
+      function generarInforme() {
+        // Obtener configuración seleccionada
+        configuracionInforme = {
+          mostrarEstadisticas: document.getElementById('mostrar-estadisticas').checked,
+          mostrarRanking: document.getElementById('mostrar-ranking').checked,
+          mostrarGraficos: document.getElementById('mostrar-graficos').checked,
+          mostrarDetalle: document.getElementById('mostrar-detalle').checked
+        };
+
+        // Cerrar modal
+        cerrarModalSeleccionDatos();
+
+        // Generar informe con la configuración seleccionada
+        cargarDatosRepuestos();
+        
+        mostrarExito('Informe generado con éxito');
+      }
+
+      // Función para limpiar filtros
+      function limpiarFiltros() {
+        // Configurar período por defecto (mes)
+        seleccionarPeriodo('mes');
+        
+        // Configurar fechas por defecto (último mes)
+        const fechaFin = new Date();
+        const fechaInicio = new Date();
+        fechaInicio.setMonth(fechaInicio.getMonth() - 1);
+        
+        document.getElementById('fecha-personalizada').value = fechaFin.toISOString().split('T')[0];
+        document.getElementById('fecha-inicio').value = fechaInicio.toISOString().split('T')[0];
+        document.getElementById('fecha-fin').value = fechaFin.toISOString().split('T')[0];
+        
+        document.getElementById('patente-filtro').value = '';
+        document.getElementById('mostrar-top').value = '0';
+        document.getElementById('ordenar-por').value = 'unidades';
         
         // Cargar datos sin filtros
-        cargarDatos();
+        cargarDatosRepuestos();
       }
 
       // Mostrar mensaje de error
@@ -1315,58 +1665,25 @@
 
       // Inicializar la aplicación cuando se cargue la página
       document.addEventListener('DOMContentLoaded', async function() {
-        // Configurar fecha por defecto (último mes)
-        const fechaFin = new Date();
-        const fechaInicio = new Date();
-        fechaInicio.setMonth(fechaInicio.getMonth() - 1);
-        
-        document.getElementById('fecha-inicio').value = fechaInicio.toISOString().split('T')[0];
-        document.getElementById('fecha-fin').value = fechaFin.toISOString().split('T')[0];
-        
-        // Configurar eventos para botones de período
-        document.querySelectorAll('.period-btn').forEach(btn => {
+        // Configurar eventos para los botones de período
+        document.querySelectorAll('.periodo-btn').forEach(btn => {
           btn.addEventListener('click', function() {
-            document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
-            this.classList.add('active');
-            currentPeriod = this.dataset.period;
-            
-            // Actualizar fechas según el período seleccionado
-            const fechaFin = new Date();
-            const fechaInicio = new Date();
-            
-            switch(currentPeriod) {
-              case 'day':
-                fechaInicio.setDate(fechaFin.getDate() - 1);
-                break;
-              case 'week':
-                fechaInicio.setDate(fechaFin.getDate() - 7);
-                break;
-              case 'month':
-                fechaInicio.setMonth(fechaFin.getMonth() - 1);
-                break;
-              case 'bimester':
-                fechaInicio.setMonth(fechaFin.getMonth() - 2);
-                break;
-              case 'trimester':
-                fechaInicio.setMonth(fechaFin.getMonth() - 3);
-                break;
-              case 'quarter':
-                fechaInicio.setMonth(fechaFin.getMonth() - 4);
-                break;
-              case 'semester':
-                fechaInicio.setMonth(fechaFin.getMonth() - 6);
-                break;
-              case 'year':
-                fechaInicio.setFullYear(fechaFin.getFullYear() - 1);
-                break;
-            }
-            
-            document.getElementById('fecha-inicio').value = fechaInicio.toISOString().split('T')[0];
-            document.getElementById('fecha-fin').value = fechaFin.toISOString().split('T')[0];
-            
-            // Cargar datos con el nuevo período
-            cargarDatos();
+            const periodo = this.getAttribute('data-periodo');
+            seleccionarPeriodo(periodo);
           });
+        });
+
+        // Configurar eventos para cambios en filtros
+        document.getElementById('patente-filtro').addEventListener('change', function() {
+          cargarDatosRepuestos();
+        });
+
+        document.getElementById('mostrar-top').addEventListener('change', function() {
+          cargarDatosRepuestos();
+        });
+
+        document.getElementById('ordenar-por').addEventListener('change', function() {
+          cargarDatosRepuestos();
         });
 
         await inicializarSupabase();

@@ -563,6 +563,80 @@
       opacity: 0.9;
     }
 
+    /* Estilos para modal de selección de datos */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-content {
+      background-color: white;
+      padding: 30px;
+      border-radius: var(--border-radius);
+      box-shadow: var(--box-shadow);
+      width: 90%;
+      max-width: 600px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #ddd;
+    }
+
+    .modal-title {
+      color: var(--color-primary);
+      margin: 0;
+    }
+
+    .close-modal {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: #666;
+    }
+
+    .close-modal:hover {
+      color: var(--color-error);
+    }
+
+    .data-selection-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .data-selection-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .data-selection-item input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+    }
+
+    .data-selection-item label {
+      font-weight: normal;
+      margin-bottom: 0;
+    }
+
     @media print {
       body {
         background: white;
@@ -622,6 +696,10 @@
       }
       
       .proyeccion-content {
+        grid-template-columns: 1fr;
+      }
+      
+      .data-selection-grid {
         grid-template-columns: 1fr;
       }
     }
@@ -696,9 +774,52 @@
         <button class="btn btn-secondary" onclick="limpiarFiltros()">
           <i class="fas fa-times"></i> Limpiar
         </button>
-        <button class="btn btn-primary" onclick="cargarDatosProgresion()">
-          <i class="fas fa-chart-line"></i> Generar Reporte
+        <button class="btn btn-primary" onclick="mostrarModalSeleccionDatos()">
+          <i class="fas fa-file-alt"></i> Generar Reporte
         </button>
+      </div>
+    </div>
+
+    <!-- Modal para selección de datos -->
+    <div id="modal-seleccion-datos" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 class="modal-title">Seleccionar Datos para el Reporte</h3>
+          <button class="close-modal" onclick="cerrarModalSeleccionDatos()">&times;</button>
+        </div>
+        <p>Seleccione qué elementos desea incluir en el reporte:</p>
+        
+        <div class="data-selection-grid">
+          <div class="data-selection-item">
+            <input type="checkbox" id="mostrar-metricas" checked>
+            <label for="mostrar-metricas">Métricas Clave</label>
+          </div>
+          <div class="data-selection-item">
+            <input type="checkbox" id="mostrar-graficos" checked>
+            <label for="mostrar-graficos">Gráficos de Evolución</label>
+          </div>
+          <div class="data-selection-item">
+            <input type="checkbox" id="mostrar-proyeccion" checked>
+            <label for="mostrar-proyeccion">Proyección de Gastos</label>
+          </div>
+          <div class="data-selection-item">
+            <input type="checkbox" id="mostrar-evolucion" checked>
+            <label for="mostrar-evolucion">Tabla de Evolución</label>
+          </div>
+          <div class="data-selection-item">
+            <input type="checkbox" id="mostrar-detalle" checked>
+            <label for="mostrar-detalle">Tabla de Detalle</label>
+          </div>
+        </div>
+        
+        <div class="form-actions">
+          <button class="btn btn-secondary" onclick="cerrarModalSeleccionDatos()">
+            <i class="fas fa-times"></i> Cancelar
+          </button>
+          <button class="btn btn-success" onclick="generarReporte()">
+            <i class="fas fa-check"></i> Generar Reporte
+          </button>
+        </div>
       </div>
     </div>
 
@@ -706,7 +827,7 @@
       <!-- Las métricas se cargarán dinámicamente -->
     </div>
 
-    <div class="resultados-container">
+    <div class="resultados-container" id="graficos-container">
       <h3>Evolución de Gastos en el Tiempo</h3>
       <div class="charts-container">
         <div class="chart-card">
@@ -736,14 +857,14 @@
       </div>
     </div>
 
-    <div class="resultados-container">
+    <div class="resultados-container" id="proyeccion-container">
       <h3>Proyección de Gastos</h3>
-      <div class="proyeccion-card" id="proyeccion-container">
+      <div class="proyeccion-card" id="proyeccion-card">
         <!-- La proyección se cargará dinámicamente -->
       </div>
     </div>
 
-    <div class="resultados-container">
+    <div class="resultados-container" id="evolucion-container">
       <h3>Resumen por Período</h3>
       <table class="evolucion-table" id="tabla-evolucion">
         <thead>
@@ -763,7 +884,7 @@
       </table>
     </div>
 
-    <div class="resultados-container">
+    <div class="resultados-container" id="detalle-container">
       <h3>Detalle de Gastos</h3>
       <table class="tabla-resultados" id="tabla-detalle">
         <thead>
@@ -796,6 +917,15 @@
       let charts = {};
       let datosProgresion = null;
       let datosAgrupados = null;
+      
+      // Configuración del reporte
+      let configuracionReporte = {
+        mostrarMetricas: true,
+        mostrarGraficos: true,
+        mostrarProyeccion: true,
+        mostrarEvolucion: true,
+        mostrarDetalle: true
+      };
 
       // Función para inicializar Supabase
       async function inicializarSupabase() {
@@ -959,16 +1089,48 @@
           // Agrupar datos por período
           datosAgrupados = agruparDatosPorPeriodo(datosProgresion, currentPeriodo);
 
-          // Actualizar interfaz
-          actualizarMetricas();
-          actualizarTablaEvolucion();
-          actualizarTablaDetalle();
-          actualizarProyeccion();
-          actualizarGraficos();
+          // Actualizar interfaz según configuración
+          actualizarVistaReporte();
 
         } catch (error) {
           console.error('Error al cargar datos de progresión:', error);
           mostrarError('Error al cargar datos: ' + error.message);
+        }
+      }
+
+      // Función para actualizar la vista según configuración del reporte
+      function actualizarVistaReporte() {
+        // Mostrar/ocultar secciones según configuración
+        document.getElementById('metricas-container').style.display = 
+          configuracionReporte.mostrarMetricas ? 'grid' : 'none';
+        document.getElementById('graficos-container').style.display = 
+          configuracionReporte.mostrarGraficos ? 'block' : 'none';
+        document.getElementById('proyeccion-container').style.display = 
+          configuracionReporte.mostrarProyeccion ? 'block' : 'none';
+        document.getElementById('evolucion-container').style.display = 
+          configuracionReporte.mostrarEvolucion ? 'block' : 'none';
+        document.getElementById('detalle-container').style.display = 
+          configuracionReporte.mostrarDetalle ? 'block' : 'none';
+
+        // Actualizar contenido de cada sección
+        if (configuracionReporte.mostrarMetricas) {
+          actualizarMetricas();
+        }
+        
+        if (configuracionReporte.mostrarGraficos) {
+          actualizarGraficos();
+        }
+        
+        if (configuracionReporte.mostrarProyeccion) {
+          actualizarProyeccion();
+        }
+        
+        if (configuracionReporte.mostrarEvolucion) {
+          actualizarTablaEvolucion();
+        }
+        
+        if (configuracionReporte.mostrarDetalle) {
+          actualizarTablaDetalle();
         }
       }
 
@@ -1185,7 +1347,7 @@
 
       // Función para actualizar proyección
       function actualizarProyeccion() {
-        const proyeccionContainer = document.getElementById('proyeccion-container');
+        const proyeccionContainer = document.getElementById('proyeccion-card');
 
         if (!datosAgrupados || Object.keys(datosAgrupados).length === 0) {
           proyeccionContainer.innerHTML = '<p style="text-align: center;">No hay suficientes datos para proyección</p>';
@@ -1522,6 +1684,43 @@
         });
       }
 
+      // Función para mostrar modal de selección de datos
+      function mostrarModalSeleccionDatos() {
+        document.getElementById('modal-seleccion-datos').style.display = 'flex';
+        
+        // Establecer valores actuales en los checkboxes
+        document.getElementById('mostrar-metricas').checked = configuracionReporte.mostrarMetricas;
+        document.getElementById('mostrar-graficos').checked = configuracionReporte.mostrarGraficos;
+        document.getElementById('mostrar-proyeccion').checked = configuracionReporte.mostrarProyeccion;
+        document.getElementById('mostrar-evolucion').checked = configuracionReporte.mostrarEvolucion;
+        document.getElementById('mostrar-detalle').checked = configuracionReporte.mostrarDetalle;
+      }
+
+      // Función para cerrar modal de selección de datos
+      function cerrarModalSeleccionDatos() {
+        document.getElementById('modal-seleccion-datos').style.display = 'none';
+      }
+
+      // Función para generar reporte con la configuración seleccionada
+      function generarReporte() {
+        // Obtener configuración seleccionada
+        configuracionReporte = {
+          mostrarMetricas: document.getElementById('mostrar-metricas').checked,
+          mostrarGraficos: document.getElementById('mostrar-graficos').checked,
+          mostrarProyeccion: document.getElementById('mostrar-proyeccion').checked,
+          mostrarEvolucion: document.getElementById('mostrar-evolucion').checked,
+          mostrarDetalle: document.getElementById('mostrar-detalle').checked
+        };
+
+        // Cerrar modal
+        cerrarModalSeleccionDatos();
+
+        // Generar reporte con la configuración seleccionada
+        cargarDatosProgresion();
+        
+        mostrarExito('Reporte generado con éxito');
+      }
+
       // Función para limpiar filtros
       function limpiarFiltros() {
         // Configurar fechas por defecto (últimos 12 meses)
@@ -1541,6 +1740,15 @@
         });
         document.querySelector('.periodo-btn[data-periodo="mensual"]').classList.add('active');
         currentPeriodo = 'mensual';
+        
+        // Restablecer configuración a mostrar todo
+        configuracionReporte = {
+          mostrarMetricas: true,
+          mostrarGraficos: true,
+          mostrarProyeccion: true,
+          mostrarEvolucion: true,
+          mostrarDetalle: true
+        };
         
         // Cargar datos sin filtros
         cargarDatosProgresion();
